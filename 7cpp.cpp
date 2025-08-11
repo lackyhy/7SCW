@@ -154,7 +154,7 @@ void drawMenu(const vector<string>& menuItems, int selectedIndex) {
         cout << "-";
     }
 
-    cout << "Version: 8.1.2 | Created by: LCKY |GitHub: *************************************" << endl;
+    cout << "Version: 8.1.2 | Created by: LCKY |GitHub: https://github.com/lackyhy/7SCW" << endl;
 
     for(int i = 0; i < consoleWidth; ++i) {
         cout << "-";
