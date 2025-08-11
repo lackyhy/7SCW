@@ -174,11 +174,15 @@ If you encounter the error **"The application was unable to start correctly (0xc
    # For 32-bit Windows:
    g++ -m32 7cpp.cpp terminal_commands.cpp -o 7SCW_32.exe
    ```
-
+   or:
+   ```bash
+   g++ 7cpp.cpp terminal_commands.cpp -o 7SCW.exe
+   ```
 3. **Use static linking for maximum compatibility:**
    ```bash
    g++ -static 7cpp.cpp terminal_commands.cpp -o 7SCW_static.exe
    ```
+   
 
 #### Check System Architecture:
 ```bash
@@ -249,3 +253,4 @@ If you encounter any issues or have questions:
 **⭐ Star this repository if you find it useful!**
 
 **🔒 Security Note:** This tool requires administrator privileges and should be used responsibly. Always backup important files before encryption/decryption operations.
+
