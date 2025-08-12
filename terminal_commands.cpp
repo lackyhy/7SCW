@@ -7,6 +7,8 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <conio.h>
+#include <sstream>
+#include <algorithm>
 
 // Random generator initialization
 void initializeRandomGenerator() {
@@ -401,34 +403,319 @@ void extendedPingTest() {
     cout << "==============================================" << endl;
 }
 
+// Helper function to get console width
+int getConsoleWidth() {
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+    return csbi.srWindow.Right - csbi.srWindow.Left + 1;
+}
+
+// Helper function to center text
+string centerText(const string& text, int width) {
+    if (text.length() >= width) return text;
+    int padding = (width - text.length()) / 2;
+    return string(padding, ' ') + text;
+}
+
+// Helper function to pad text to specific width
+string padText(const string& text, int width, bool leftAlign = true) {
+    if (text.length() >= width) return text.substr(0, width);
+    if (leftAlign) {
+        return text + string(width - text.length(), ' ');
+    } else {
+        return string(width - text.length(), ' ') + text;
+    }
+}
+
+// Helper function to create a line separator
+string createSeparator(int width, char character = '-') {
+    return string(width, character);
+}
+
 void showSavedNetworks() {
-    cout << "Saved Wi-Fi Networks:" << endl;
-    cout << "====================" << endl;
+    system("cls");
+    cout << "=========================================" << endl;
+    cout << "           SAVED WI-FI NETWORKS" << endl;
+    cout << "=========================================" << endl;
     cout << endl;
     
-    // Use netsh to get saved networks
-    cout << "Executing: netsh wlan show profiles" << endl;
-    cout << "-----------------------------------" << endl;
-    system("netsh wlan show profiles");
+    // Get console width for proper formatting
+    int consoleWidth = getConsoleWidth();
+    int tableWidth = min(consoleWidth - 4, 80); // Leave some margin
     
+    // Create table header
+    string headerSeparator = createSeparator(tableWidth, '=');
+    string columnSeparator = createSeparator(tableWidth, '-');
+    
+    cout << headerSeparator << endl;
+    
+    // Calculate column widths
+    int nameWidth = tableWidth * 3 / 5; // 60% for name
+    int passwordWidth = tableWidth * 2 / 5; // 40% for password
+    
+    // Print header
+    cout << "| " << padText("NETWORK NAME", nameWidth) << " | " << padText("PASSWORD", passwordWidth) << " |" << endl;
+    cout << columnSeparator << endl;
+    
+    // Get saved networks using netsh
+    FILE* pipe = _popen("netsh wlan show profiles", "r");
+    if (!pipe) {
+        cout << "Error: Cannot execute netsh command" << endl;
+        return;
+    }
+    
+    vector<string> networkNames;
+    char buffer[128];
+    string result = "";
+    
+    while (fgets(buffer, sizeof(buffer), pipe) != NULL) {
+        result += buffer;
+    }
+    _pclose(pipe);
+    
+    // Parse network names from the output
+    stringstream ss(result);
+    string line;
+    while (getline(ss, line)) {
+        if (line.find(":") != string::npos) {
+            size_t colonPos = line.find(":");
+            if (colonPos != string::npos) {
+                string networkName = line.substr(colonPos + 1);
+                // Trim whitespace
+                networkName.erase(0, networkName.find_first_not_of(" \t\r\n"));
+                networkName.erase(networkName.find_last_not_of(" \t\r\n") + 1);
+                if (!networkName.empty()) {
+                    networkNames.push_back(networkName);
+                }
+            }
+        }
+    }
+    
+    // Display networks in table format
+    if (networkNames.empty()) {
+        cout << "| " << padText("No saved networks found", tableWidth - 2) << " |" << endl;
+    } else {
+        for (const string& networkName : networkNames) {
+            // Truncate network name if too long
+            string displayName = networkName;
+            if (displayName.length() > nameWidth - 2) {
+                displayName = displayName.substr(0, nameWidth - 5) + "...";
+            }
+            
+            cout << "| " << padText(displayName, nameWidth) << " | " << padText("********", passwordWidth) << " |" << endl;
+        }
+    }
+    
+    cout << headerSeparator << endl;
     cout << endl;
-    cout << "Note: Passwords are hidden for security reasons." << endl;
-    cout << "To view a specific network password, use:" << endl;
-    cout << "netsh wlan show profile name=\"NetworkName\" key=clear" << endl;
+    
+    // Show options
+    cout << "Options:" << endl;
+    cout << "1. View password for specific network" << endl;
+    cout << "2. Delete network profile" << endl;
+    cout << "3. Export networks list" << endl;
+    cout << "4. Back to network menu" << endl;
+    cout << endl;
+    cout << "Enter choice (1-4): ";
+    
+    char choice = _getch();
+    cout << endl;
+    
+    switch (choice) {
+        case '1': {
+            cout << "Enter network name to view password: ";
+            string targetNetwork;
+            getline(cin, targetNetwork);
+            
+            if (!targetNetwork.empty()) {
+                cout << endl << "Getting password for: " << targetNetwork << endl;
+                cout << "----------------------------------------" << endl;
+                string command = "netsh wlan show profile name=\"" + targetNetwork + "\" key=clear";
+                system(command.c_str());
+            }
+            break;
+        }
+        case '2': {
+            cout << "Enter network name to delete: ";
+            string targetNetwork;
+            getline(cin, targetNetwork);
+            
+            if (!targetNetwork.empty()) {
+                cout << endl << "Deleting network profile: " << targetNetwork << endl;
+                cout << "----------------------------------------" << endl;
+                string command = "netsh wlan delete profile name=\"" + targetNetwork + "\"";
+                system(command.c_str());
+                cout << "Profile deleted successfully!" << endl;
+            }
+            break;
+        }
+        case '3': {
+            cout << "Exporting networks list to 'saved_networks.txt'..." << endl;
+            system("netsh wlan show profiles > saved_networks.txt");
+            cout << "Networks list exported successfully!" << endl;
+            break;
+        }
+        case '4':
+            return;
+        default:
+            cout << "Invalid choice!" << endl;
+            break;
+    }
+    
+    cout << endl << "Press any key to continue...";
+    _getch();
 }
 
 void showAvailableNetworks() {
-    cout << "Available Wi-Fi Networks:" << endl;
-    cout << "========================" << endl;
+    system("cls");
+    cout << "=========================================" << endl;
+    cout << "         AVAILABLE WI-FI NETWORKS" << endl;
+    cout << "=========================================" << endl;
     cout << endl;
     
-    cout << "Scanning for available networks..." << endl;
-    cout << "----------------------------------" << endl;
-    system("netsh wlan show networks");
+    // Get console width for proper formatting
+    int consoleWidth = getConsoleWidth();
+    int tableWidth = min(consoleWidth - 4, 80); // Leave some margin
     
+    // Create table header
+    string headerSeparator = createSeparator(tableWidth, '=');
+    string columnSeparator = createSeparator(tableWidth, '-');
+    
+    cout << headerSeparator << endl;
+    
+    // Calculate column widths
+    int nameWidth = tableWidth * 2 / 3; // 66% for name
+    int signalWidth = tableWidth * 1 / 3; // 33% for signal
+    
+    // Print header
+    cout << "| " << padText("NETWORK NAME", nameWidth) << " | " << padText("SIGNAL", signalWidth) << " |" << endl;
+    cout << columnSeparator << endl;
+    
+    // Get available networks using netsh
+    FILE* pipe = _popen("netsh wlan show networks", "r");
+    if (!pipe) {
+        cout << "Error: Cannot execute netsh command" << endl;
+        return;
+    }
+    
+    vector<pair<string, string>> networks; // name, signal
+    char buffer[128];
+    string result = "";
+    
+    while (fgets(buffer, sizeof(buffer), pipe) != NULL) {
+        result += buffer;
+    }
+    _pclose(pipe);
+    
+    // Parse network information from the output
+    stringstream ss(result);
+    string line;
+    string currentNetwork = "";
+    string currentSignal = "";
+    
+    while (getline(ss, line)) {
+        if (line.find("SSID") != string::npos && line.find(":") != string::npos) {
+            size_t colonPos = line.find(":");
+            if (colonPos != string::npos) {
+                currentNetwork = line.substr(colonPos + 1);
+                // Trim whitespace
+                currentNetwork.erase(0, currentNetwork.find_first_not_of(" \t\r\n"));
+                currentNetwork.erase(currentNetwork.find_last_not_of(" \t\r\n") + 1);
+            }
+        } else if (line.find("Signal") != string::npos && line.find(":") != string::npos) {
+            size_t colonPos = line.find(":");
+            if (colonPos != string::npos) {
+                currentSignal = line.substr(colonPos + 1);
+                // Trim whitespace
+                currentSignal.erase(0, currentSignal.find_first_not_of(" \t\r\n"));
+                currentSignal.erase(currentSignal.find_last_not_of(" \t\r\n") + 1);
+                
+                // If we have both network name and signal, add to list
+                if (!currentNetwork.empty() && !currentSignal.empty()) {
+                    networks.push_back(make_pair(currentNetwork, currentSignal));
+                    currentNetwork = "";
+                    currentSignal = "";
+                }
+            }
+        }
+    }
+    
+    // Display networks in table format
+    if (networks.empty()) {
+        cout << "| " << padText("No available networks found", tableWidth - 2) << " |" << endl;
+    } else {
+        for (const auto& network : networks) {
+            // Truncate network name if too long
+            string displayName = network.first;
+            if (displayName.length() > nameWidth - 2) {
+                displayName = displayName.substr(0, nameWidth - 5) + "...";
+            }
+            
+            // Color code signal strength
+            string signal = network.second;
+            if (signal.find("Excellent") != string::npos || signal.find("Very Good") != string::npos) {
+                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+            } else if (signal.find("Good") != string::npos || signal.find("Fair") != string::npos) {
+                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+            } else {
+                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_INTENSITY);
+            }
+            
+            cout << "| " << padText(displayName, nameWidth) << " | " << padText(signal, signalWidth) << " |" << endl;
+            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        }
+    }
+    
+    cout << headerSeparator << endl;
     cout << endl;
-    cout << "To connect to a network, use:" << endl;
-    cout << "netsh wlan connect name=\"NetworkName\"" << endl;
+    
+    // Show options
+    cout << "Options:" << endl;
+    cout << "1. Connect to specific network" << endl;
+    cout << "2. Refresh network list" << endl;
+    cout << "3. Export networks list" << endl;
+    cout << "4. Back to network menu" << endl;
+    cout << endl;
+    cout << "Enter choice (1-4): ";
+    
+    char choice = _getch();
+    cout << endl;
+    
+    switch (choice) {
+        case '1': {
+            cout << "Enter network name to connect: ";
+            string targetNetwork;
+            getline(cin, targetNetwork);
+            
+            if (!targetNetwork.empty()) {
+                cout << endl << "Connecting to: " << targetNetwork << endl;
+                cout << "----------------------------------------" << endl;
+                string command = "netsh wlan connect name=\"" + targetNetwork + "\"";
+                system(command.c_str());
+                cout << "Connection attempt completed!" << endl;
+            }
+            break;
+        }
+        case '2': {
+            cout << "Refreshing network list..." << endl;
+            showAvailableNetworks(); // Recursive call to refresh
+            return;
+        }
+        case '3': {
+            cout << "Exporting networks list to 'available_networks.txt'..." << endl;
+            system("netsh wlan show networks > available_networks.txt");
+            cout << "Networks list exported successfully!" << endl;
+            break;
+        }
+        case '4':
+            return;
+        default:
+            cout << "Invalid choice!" << endl;
+            break;
+    }
+    
+    cout << endl << "Press any key to continue...";
+    _getch();
 }
 
 void pingSite(const string& url) {
