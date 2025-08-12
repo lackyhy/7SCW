@@ -1,4 +1,4 @@
-﻿#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
+#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 #include <windows.h>
 #include <conio.h>
 #include <shlwapi.h>
@@ -1548,6 +1548,7 @@ void customTerminal() {
             cout << "  encrypt -pass <pwd> <file> - Encrypt file with password" << endl;
             cout << "  deencrypt [file] - Decrypt file (will prompt for password)" << endl;
             cout << "  create_hash      - Generate random hashes with flags: -l, -q, -s, -f, -h" << endl;
+            cout << "  network          - Network management and testing menu" << endl;
             cout << "  help             - Show this help" << endl;
             cout << "  exit, quit       - Exit terminal" << endl;
             cout << "  Any other command will be executed as Windows command" << endl << endl;
@@ -1744,6 +1745,10 @@ void customTerminal() {
             // Use the function from terminal_commands module
             createHash(tokens);
         }
+        else if (cmd == "network") {
+            // Use the function from terminal_commands module
+            showNetworkMenu();
+        }
         else {
             // Execute as Windows command
             system(command.c_str());
@@ -1754,7 +1759,7 @@ void customTerminal() {
     
         system("cls");
     cout << "Returning to main menu..." << endl;
-        Sleep(1000);
+        Sleep(100);
     }
 
 
