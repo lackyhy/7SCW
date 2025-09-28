@@ -1,15 +1,14 @@
-
 #include <vector>
 #include <string>
-#include <conio.h>
-#include <windows.h>
 #include <algorithm>
 #include <shlobj.h>
 #include <iostream>
-#include <fstream>
-#include <map>
 #include <sstream>
+#include "fstream"
 
+#include "conio.h"
+#include "windows.h"
+#include "../../h_file/startup/SHOW_ALL_STARTUP.h"
 using namespace std;
 
 struct StartupItem {
@@ -21,7 +20,7 @@ struct StartupItem {
     bool isMalicious; // подозрительный элемент
 };
 
-class StartupManager {
+class StartupManager_1 {
 private:
     vector<StartupItem> items;
     int selectedIndex = 0;
@@ -760,8 +759,296 @@ public:
     }
 };
 
-StartupManager startupManager;
+class StartupManager_2 {
+public:
+    void SHOW_ALL_STARTUP() {
+        system("cls");
+        cout << "========================================" << endl;
+        cout << "    SHOW ALL STARTUP" << endl;
+        cout << "========================================" << endl << endl;
 
-void startupMG_SHOW_ALL_STARTUP() {
-    startupManager.SHOW_ALL_STARTUP();
+        // Folder startup
+        cout << "Current User Startup Folder:" << endl;
+        cout << "-----------------------------" << endl;
+        char appDataPath[MAX_PATH];
+        if (SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, appDataPath) == S_OK) {
+            string startupPath = string(appDataPath) + "\\Microsoft\\Windows\\Start Menu\\Programs\\Startup";
+            if (GetFileAttributesA(startupPath.c_str()) != INVALID_FILE_ATTRIBUTES) {
+                cout << "✓ Found: " << startupPath << endl << endl;
+                cout << "Contents:" << endl;
+
+                WIN32_FIND_DATAA findData;
+                HANDLE hFind = FindFirstFileA((startupPath + "\\*").c_str(), &findData);
+                if (hFind != INVALID_HANDLE_VALUE) {
+                    bool hasFiles = false;
+                    do {
+                        if (strcmp(findData.cFileName, ".") != 0 && strcmp(findData.cFileName, "..") != 0) {
+                            cout << "  " << findData.cFileName << endl;
+                            hasFiles = true;
+                        }
+                    } while (FindNextFileA(hFind, &findData));
+                    FindClose(hFind);
+                    if (!hasFiles) {
+                        cout << "  (Empty)" << endl;
+                    }
+                }
+            } else {
+                cout << "✗ Not found: " << startupPath << endl;
+            }
+        }
+
+        cout << endl;
+
+        // All Users Startup Folder
+        cout << "All Users Startup Folder:" << endl;
+        cout << "-------------------------" << endl;
+        char programDataPath[MAX_PATH];
+        if (SHGetFolderPathA(NULL, CSIDL_COMMON_APPDATA, NULL, 0, programDataPath) == S_OK) {
+            string commonStartupPath = string(programDataPath) + "\\Microsoft\\Windows\\Start Menu\\Programs\\Startup";
+            if (GetFileAttributesA(commonStartupPath.c_str()) != INVALID_FILE_ATTRIBUTES) {
+                cout << "✓ Found: " << commonStartupPath << endl << endl;
+                cout << "Contents:" << endl;
+
+                WIN32_FIND_DATAA findData;
+                HANDLE hFind = FindFirstFileA((commonStartupPath + "\\*").c_str(), &findData);
+                if (hFind != INVALID_HANDLE_VALUE) {
+                    bool hasFiles = false;
+                    do {
+                        if (strcmp(findData.cFileName, ".") != 0 && strcmp(findData.cFileName, "..") != 0) {
+                            cout << "  " << findData.cFileName << endl;
+                            hasFiles = true;
+                        }
+                    } while (FindNextFileA(hFind, &findData));
+                    FindClose(hFind);
+                    if (!hasFiles) {
+                        cout << "  (Empty)" << endl;
+                    }
+                }
+            } else {
+                cout << "✗ Not found: " << commonStartupPath << endl;
+            }
+        }
+
+
+        // Check HKCU Run
+        system("reg query \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\" 2>nul");
+        cout << endl;
+
+        // Check HKCU RunOnce
+        system("reg query \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce\" 2>nul");
+        cout << endl;
+
+        // Check HKLM Run
+        system("reg query \"HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\" 2>nul");
+        cout << endl;
+
+        // Check HKLM RunOnce
+        system("reg query \"HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce\" 2>nul");
+        cout << endl;
+
+
+        auto showRegistryValues = [](const string& regPath, const string& description = "") {
+            cout << "• " << regPath;
+            if (!description.empty()) {
+                cout << " (" << description << ")";
+            }
+            cout << endl;
+
+            // Создаем временный файл для вывода reg query
+            string tempFile = "temp_reg_output.txt";
+            string command = "reg query \"" + regPath + "\" 2>nul > " + tempFile;
+            system(command.c_str());
+
+            // Читаем и выводим содержимое
+            ifstream file(tempFile);
+            string line;
+            bool hasContent = false;
+
+            while (getline(file, line)) {
+                if (!line.empty() && line.find(regPath) == string::npos) {
+                    if (!hasContent) {
+                        cout << "\t\tCurrent values:" << endl;
+                        hasContent = true;
+                    }
+                    cout << "\t\t  " << line << endl;
+                }
+            }
+            file.close();
+
+            // Удаляем временный файл
+            remove(tempFile.c_str());
+
+            if (!hasContent) {
+                cout << "\t\t(No values found)" << endl;
+            }
+            cout << endl;
+        };
+        auto showRegistryKeyValues = [](const string& regPath, const string& valueName = "") {
+            cout << "• " << regPath;
+            if (!valueName.empty()) {
+                cout << "\\" << valueName;
+            }
+            cout << endl;
+
+            string tempFile = "temp_reg_output.txt";
+            string command;
+            if (valueName.empty()) {
+                command = "reg query \"" + regPath + "\" 2>nul > " + tempFile;
+            } else {
+                command = "reg query \"" + regPath + "\" /v \"" + valueName + "\" 2>nul > " + tempFile;
+            }
+            system(command.c_str());
+
+            ifstream file(tempFile);
+            string line;
+            bool hasContent = false;
+
+            while (getline(file, line)) {
+                if (!line.empty() && line.find(regPath) == string::npos) {
+                    if (!hasContent) {
+                        cout << "\t\tCurrent value: ";
+                        hasContent = true;
+                    }
+                    cout << line << endl;
+                }
+            }
+            file.close();
+
+            remove(tempFile.c_str());
+
+            if (!hasContent) {
+                cout << "\t\t(Value not set)" << endl;
+            }
+            cout << endl;
+        };
+
+        showRegistryValues("HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", "User startup programs");
+        showRegistryValues("HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", "Machine startup programs");
+        showRegistryValues("HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce", "User run once programs");
+        showRegistryValues("HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce", "Machine run once programs");
+        showRegistryValues("HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\RunServices", "User services");
+        showRegistryValues("HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\RunServices", "Machine services");
+        showRegistryValues("HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\RunServicesOnce", "User run once services");
+        showRegistryValues("HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\RunServicesOnce", "Machine run once services");
+        showRegistryValues("HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\ShellExecuteHooks", "Shell execute hooks");
+        showRegistryValues("HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\SharedTaskScheduler", "Shared tasks");
+        showRegistryValues("HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Browser Helper Objects", "Browser helpers");
+        showRegistryValues("HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer\\Run", "Machine policies");
+        showRegistryValues("HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer\\Run", "User policies");
+        showRegistryValues("HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run", "Machine approved startup");
+        showRegistryValues("HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run", "User approved startup");
+        showRegistryValues("HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run32", "Machine 32-bit approved");
+        showRegistryValues("HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run32", "User 32-bit approved");
+        showRegistryValues("HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\StartupFolder", "Machine startup folder");
+        showRegistryValues("HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\StartupFolder", "User startup folder");
+        showRegistryValues("HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\StartupFolderCommon", "Machine common startup");
+        showRegistryValues("HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\StartupFolderCommon", "User common startup");
+        showRegistryValues("HKLM\\SYSTEM\\CurrentControlSet\\Services", "System services");
+
+        cout << "WINLOGON VALUES:" << endl;
+        cout << "----------------" << endl;
+        showRegistryKeyValues("HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon", "Taskman");
+        showRegistryKeyValues("HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon", "AppSetup");
+        showRegistryKeyValues("HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon", "System");
+
+        cout << "TASK SCHEDULER TASKS:" << endl;
+        cout << "---------------------" << endl;
+        cout << "• All tasks containing 'startup' in name" << endl;
+        // Показ задач планировщика
+        system("schtasks /query /fo list | findstr /i \"startup\" > temp_tasks.txt 2>nul");
+        ifstream taskFile("temp_tasks.txt");
+        string taskLine;
+        bool hasTasks = false;
+        cout << "\t\tCurrent tasks:" << endl;
+        while (getline(taskFile, taskLine)) {
+            if (!taskLine.empty()) {
+                cout << "\t\t  " << taskLine << endl;
+                hasTasks = true;
+            }
+        }
+        taskFile.close();
+        remove("temp_tasks.txt");
+        if (!hasTasks) {
+            cout << "\t\t  (No startup tasks found)" << endl;
+        }
+        cout << endl;
+
+        cout << "• All tasks containing 'logon' in name" << endl;
+        system("schtasks /query /fo list | findstr /i \"logon\" > temp_tasks.txt 2>nul");
+        taskFile.open("temp_tasks.txt");
+        hasTasks = false;
+        cout << "\t\tCurrent tasks:" << endl;
+        while (getline(taskFile, taskLine)) {
+            if (!taskLine.empty()) {
+                cout << "\t\t  " << taskLine << endl;
+                hasTasks = true;
+            }
+        }
+        taskFile.close();
+        remove("temp_tasks.txt");
+        if (!hasTasks) {
+            cout << "\t\t  (No logon tasks found)" << endl;
+        }
+        cout << endl;
+
+        cout << "• All tasks containing 'boot' in name" << endl;
+        system("schtasks /query /fo list | findstr /i \"boot\" > temp_tasks.txt 2>nul");
+        taskFile.open("temp_tasks.txt");
+        hasTasks = false;
+        cout << "\t\tCurrent tasks:" << endl;
+        while (getline(taskFile, taskLine)) {
+            if (!taskLine.empty()) {
+                cout << "\t\t  " << taskLine << endl;
+                hasTasks = true;
+            }
+        }
+        taskFile.close();
+        remove("temp_tasks.txt");
+        if (!hasTasks) {
+            cout << "\t\t  (No boot tasks found)" << endl;
+        }
+        cout << endl;
+
+        cout << "DEFAULT VALUES WILL BE RESTORED:" << endl;
+        cout << "--------------------------------" << endl;
+        showRegistryKeyValues("HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon", "Shell");
+        showRegistryKeyValues("HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon", "Userinit");
+
+        cout << "==================================================================" << endl << endl;
+
+
+
+        cout << endl << "Press any key to continue...";
+        _getch();
+    }
+};
+
+
+StartupManager_1 startupManager_1;
+StartupManager_2 startupManager_2;
+
+
+void startupMG_SHOW_ALL_STARTUP_1() {
+    startupManager_1.SHOW_ALL_STARTUP();
+}
+
+void startupMG_SHOW_ALL_STARTUP_2() {
+    startupManager_2.SHOW_ALL_STARTUP();
+}
+
+void SHOW_ALL_STARTUP() {
+    system("cls");
+    string user_input;
+    cout << "1: show all startup\n";
+    cout << "2: show/edit startup\n";
+    cout << "\ninput: ";
+    cin >> user_input;
+    if ( user_input == "1" ) {
+        startupMG_SHOW_ALL_STARTUP_2();
+    } else if ( user_input == "2" ) {
+        startupMG_SHOW_ALL_STARTUP_1();
+    } else {
+        cout << "error input:";
+        return SHOW_ALL_STARTUP();
+    }
 }

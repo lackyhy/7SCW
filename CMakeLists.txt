@@ -6,4 +6,4 @@ set(CMAKE_CXX_STANDARD 20)
 
 set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
 
-add_executable(7SCW main.cpp terminal_commands.cpp terminal_commands.h SHOW_ALL_STARTUP.cpp SHOW_ALL_STARTUP.h)
+add_executable(7SCW main.cpp cpp_file/terminal/terminal_commands.cpp h_file/terminal/terminal_commands.h cpp_file/startup/SHOW_ALL_STARTUP.cpp h_file/startup/SHOW_ALL_STARTUP.h cpp_file/file_manager/file_manager.cpp h_file/file_manager/file_manager.h cpp_file/startup/restoreStartupSettings.cpp h_file/startup/restoreStartupSettings.h cpp_file/terminal/terminal.cpp h_file/terminal/terminal.h cpp_file/startup/startup.cpp h_file/startup/startup.h h_file/main.h)

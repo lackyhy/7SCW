@@ -1,1 +1,1 @@
-CMakeFiles/7SCW.dir/main.cpp.obj CMakeFiles/7SCW.dir/terminal_commands.cpp.obj CMakeFiles/7SCW.dir/SHOW_ALL_STARTUP.cpp.obj
+CMakeFiles/7SCW.dir/main.cpp.obj CMakeFiles/7SCW.dir/cpp_file/terminal/terminal_commands.cpp.obj CMakeFiles/7SCW.dir/cpp_file/startup/SHOW_ALL_STARTUP.cpp.obj CMakeFiles/7SCW.dir/cpp_file/file_manager/file_manager.cpp.obj CMakeFiles/7SCW.dir/cpp_file/startup/restoreStartupSettings.cpp.obj CMakeFiles/7SCW.dir/cpp_file/terminal/terminal.cpp.obj CMakeFiles/7SCW.dir/cpp_file/startup/startup.cpp.obj

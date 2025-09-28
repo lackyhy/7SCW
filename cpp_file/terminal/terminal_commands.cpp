@@ -1,14 +1,13 @@
-#include "terminal_commands.h"
+#include "../../h_file/terminal/terminal_commands.h"
 #include <random>
 #include <chrono>
 #include <ctime>
 #include <windows.h>
-#include <iphlpapi.h>
-#include <winsock2.h>
-#include <ws2tcpip.h>
 #include <conio.h>
 #include <sstream>
 #include <algorithm>
+#include <fstream>
+#include <iomanip>
 
 // Random generator initialization
 void initializeRandomGenerator() {
@@ -17,6 +16,7 @@ void initializeRandomGenerator() {
     auto seed = now.time_since_epoch().count();
     srand(static_cast<unsigned int>(seed));
 }
+
 // Hash creation functions
 void showHashHelp() {
     cout << "Hash creation options:" << endl;
@@ -98,19 +98,6 @@ void createHash(const vector<string> &args) {
     if (saveToFile && !filename.empty()) {
         saveHashesToFile(hashes, filename);
     }
-}
-
-// Command parsing and execution
-bool executeCommand(const string &command, const vector<string> &args) {
-    if (command == "create_hash") {
-        createHash(args);
-        return true;
-    } else if (command == "network") {
-        showNetworkMenu();
-        return true;
-    }
-
-    return false;
 }
 
 // Network functions
@@ -319,13 +306,6 @@ int getConsoleWidth() {
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
     return csbi.srWindow.Right - csbi.srWindow.Left + 1;
-}
-
-// Helper function to center text
-string centerText(const string& text, int width) {
-    if (text.length() >= width) return text;
-    int padding = (width - text.length()) / 2;
-    return string(padding, ' ') + text;
 }
 
 // Helper function to pad text to specific width

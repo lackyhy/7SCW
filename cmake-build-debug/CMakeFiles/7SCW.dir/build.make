@@ -69,49 +69,109 @@ CMakeFiles/7SCW.dir/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/7SCW.dir/main.cpp.s"
 	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\User\Desktop\7SCW\main.cpp -o CMakeFiles\7SCW.dir\main.cpp.s
 
-CMakeFiles/7SCW.dir/terminal_commands.cpp.obj: CMakeFiles/7SCW.dir/flags.make
-CMakeFiles/7SCW.dir/terminal_commands.cpp.obj: ../terminal_commands.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=C:\Users\User\Desktop\7SCW\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/7SCW.dir/terminal_commands.cpp.obj"
-	C:\MinGW\bin\g++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles\7SCW.dir\terminal_commands.cpp.obj -c C:\Users\User\Desktop\7SCW\terminal_commands.cpp
+CMakeFiles/7SCW.dir/cpp_file/terminal/terminal_commands.cpp.obj: CMakeFiles/7SCW.dir/flags.make
+CMakeFiles/7SCW.dir/cpp_file/terminal/terminal_commands.cpp.obj: ../cpp_file/terminal/terminal_commands.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=C:\Users\User\Desktop\7SCW\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/7SCW.dir/cpp_file/terminal/terminal_commands.cpp.obj"
+	C:\MinGW\bin\g++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles\7SCW.dir\cpp_file\terminal\terminal_commands.cpp.obj -c C:\Users\User\Desktop\7SCW\cpp_file\terminal\terminal_commands.cpp
 
-CMakeFiles/7SCW.dir/terminal_commands.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/7SCW.dir/terminal_commands.cpp.i"
-	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\User\Desktop\7SCW\terminal_commands.cpp > CMakeFiles\7SCW.dir\terminal_commands.cpp.i
+CMakeFiles/7SCW.dir/cpp_file/terminal/terminal_commands.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/7SCW.dir/cpp_file/terminal/terminal_commands.cpp.i"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\User\Desktop\7SCW\cpp_file\terminal\terminal_commands.cpp > CMakeFiles\7SCW.dir\cpp_file\terminal\terminal_commands.cpp.i
 
-CMakeFiles/7SCW.dir/terminal_commands.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/7SCW.dir/terminal_commands.cpp.s"
-	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\User\Desktop\7SCW\terminal_commands.cpp -o CMakeFiles\7SCW.dir\terminal_commands.cpp.s
+CMakeFiles/7SCW.dir/cpp_file/terminal/terminal_commands.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/7SCW.dir/cpp_file/terminal/terminal_commands.cpp.s"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\User\Desktop\7SCW\cpp_file\terminal\terminal_commands.cpp -o CMakeFiles\7SCW.dir\cpp_file\terminal\terminal_commands.cpp.s
 
-CMakeFiles/7SCW.dir/SHOW_ALL_STARTUP.cpp.obj: CMakeFiles/7SCW.dir/flags.make
-CMakeFiles/7SCW.dir/SHOW_ALL_STARTUP.cpp.obj: ../SHOW_ALL_STARTUP.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=C:\Users\User\Desktop\7SCW\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/7SCW.dir/SHOW_ALL_STARTUP.cpp.obj"
-	C:\MinGW\bin\g++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles\7SCW.dir\SHOW_ALL_STARTUP.cpp.obj -c C:\Users\User\Desktop\7SCW\SHOW_ALL_STARTUP.cpp
+CMakeFiles/7SCW.dir/cpp_file/startup/SHOW_ALL_STARTUP.cpp.obj: CMakeFiles/7SCW.dir/flags.make
+CMakeFiles/7SCW.dir/cpp_file/startup/SHOW_ALL_STARTUP.cpp.obj: ../cpp_file/startup/SHOW_ALL_STARTUP.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=C:\Users\User\Desktop\7SCW\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/7SCW.dir/cpp_file/startup/SHOW_ALL_STARTUP.cpp.obj"
+	C:\MinGW\bin\g++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles\7SCW.dir\cpp_file\startup\SHOW_ALL_STARTUP.cpp.obj -c C:\Users\User\Desktop\7SCW\cpp_file\startup\SHOW_ALL_STARTUP.cpp
 
-CMakeFiles/7SCW.dir/SHOW_ALL_STARTUP.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/7SCW.dir/SHOW_ALL_STARTUP.cpp.i"
-	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\User\Desktop\7SCW\SHOW_ALL_STARTUP.cpp > CMakeFiles\7SCW.dir\SHOW_ALL_STARTUP.cpp.i
+CMakeFiles/7SCW.dir/cpp_file/startup/SHOW_ALL_STARTUP.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/7SCW.dir/cpp_file/startup/SHOW_ALL_STARTUP.cpp.i"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\User\Desktop\7SCW\cpp_file\startup\SHOW_ALL_STARTUP.cpp > CMakeFiles\7SCW.dir\cpp_file\startup\SHOW_ALL_STARTUP.cpp.i
 
-CMakeFiles/7SCW.dir/SHOW_ALL_STARTUP.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/7SCW.dir/SHOW_ALL_STARTUP.cpp.s"
-	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\User\Desktop\7SCW\SHOW_ALL_STARTUP.cpp -o CMakeFiles\7SCW.dir\SHOW_ALL_STARTUP.cpp.s
+CMakeFiles/7SCW.dir/cpp_file/startup/SHOW_ALL_STARTUP.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/7SCW.dir/cpp_file/startup/SHOW_ALL_STARTUP.cpp.s"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\User\Desktop\7SCW\cpp_file\startup\SHOW_ALL_STARTUP.cpp -o CMakeFiles\7SCW.dir\cpp_file\startup\SHOW_ALL_STARTUP.cpp.s
+
+CMakeFiles/7SCW.dir/cpp_file/file_manager/file_manager.cpp.obj: CMakeFiles/7SCW.dir/flags.make
+CMakeFiles/7SCW.dir/cpp_file/file_manager/file_manager.cpp.obj: ../cpp_file/file_manager/file_manager.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=C:\Users\User\Desktop\7SCW\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/7SCW.dir/cpp_file/file_manager/file_manager.cpp.obj"
+	C:\MinGW\bin\g++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles\7SCW.dir\cpp_file\file_manager\file_manager.cpp.obj -c C:\Users\User\Desktop\7SCW\cpp_file\file_manager\file_manager.cpp
+
+CMakeFiles/7SCW.dir/cpp_file/file_manager/file_manager.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/7SCW.dir/cpp_file/file_manager/file_manager.cpp.i"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\User\Desktop\7SCW\cpp_file\file_manager\file_manager.cpp > CMakeFiles\7SCW.dir\cpp_file\file_manager\file_manager.cpp.i
+
+CMakeFiles/7SCW.dir/cpp_file/file_manager/file_manager.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/7SCW.dir/cpp_file/file_manager/file_manager.cpp.s"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\User\Desktop\7SCW\cpp_file\file_manager\file_manager.cpp -o CMakeFiles\7SCW.dir\cpp_file\file_manager\file_manager.cpp.s
+
+CMakeFiles/7SCW.dir/cpp_file/startup/restoreStartupSettings.cpp.obj: CMakeFiles/7SCW.dir/flags.make
+CMakeFiles/7SCW.dir/cpp_file/startup/restoreStartupSettings.cpp.obj: ../cpp_file/startup/restoreStartupSettings.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=C:\Users\User\Desktop\7SCW\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/7SCW.dir/cpp_file/startup/restoreStartupSettings.cpp.obj"
+	C:\MinGW\bin\g++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles\7SCW.dir\cpp_file\startup\restoreStartupSettings.cpp.obj -c C:\Users\User\Desktop\7SCW\cpp_file\startup\restoreStartupSettings.cpp
+
+CMakeFiles/7SCW.dir/cpp_file/startup/restoreStartupSettings.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/7SCW.dir/cpp_file/startup/restoreStartupSettings.cpp.i"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\User\Desktop\7SCW\cpp_file\startup\restoreStartupSettings.cpp > CMakeFiles\7SCW.dir\cpp_file\startup\restoreStartupSettings.cpp.i
+
+CMakeFiles/7SCW.dir/cpp_file/startup/restoreStartupSettings.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/7SCW.dir/cpp_file/startup/restoreStartupSettings.cpp.s"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\User\Desktop\7SCW\cpp_file\startup\restoreStartupSettings.cpp -o CMakeFiles\7SCW.dir\cpp_file\startup\restoreStartupSettings.cpp.s
+
+CMakeFiles/7SCW.dir/cpp_file/terminal/terminal.cpp.obj: CMakeFiles/7SCW.dir/flags.make
+CMakeFiles/7SCW.dir/cpp_file/terminal/terminal.cpp.obj: ../cpp_file/terminal/terminal.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=C:\Users\User\Desktop\7SCW\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/7SCW.dir/cpp_file/terminal/terminal.cpp.obj"
+	C:\MinGW\bin\g++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles\7SCW.dir\cpp_file\terminal\terminal.cpp.obj -c C:\Users\User\Desktop\7SCW\cpp_file\terminal\terminal.cpp
+
+CMakeFiles/7SCW.dir/cpp_file/terminal/terminal.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/7SCW.dir/cpp_file/terminal/terminal.cpp.i"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\User\Desktop\7SCW\cpp_file\terminal\terminal.cpp > CMakeFiles\7SCW.dir\cpp_file\terminal\terminal.cpp.i
+
+CMakeFiles/7SCW.dir/cpp_file/terminal/terminal.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/7SCW.dir/cpp_file/terminal/terminal.cpp.s"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\User\Desktop\7SCW\cpp_file\terminal\terminal.cpp -o CMakeFiles\7SCW.dir\cpp_file\terminal\terminal.cpp.s
+
+CMakeFiles/7SCW.dir/cpp_file/startup/startup.cpp.obj: CMakeFiles/7SCW.dir/flags.make
+CMakeFiles/7SCW.dir/cpp_file/startup/startup.cpp.obj: ../cpp_file/startup/startup.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=C:\Users\User\Desktop\7SCW\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/7SCW.dir/cpp_file/startup/startup.cpp.obj"
+	C:\MinGW\bin\g++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles\7SCW.dir\cpp_file\startup\startup.cpp.obj -c C:\Users\User\Desktop\7SCW\cpp_file\startup\startup.cpp
+
+CMakeFiles/7SCW.dir/cpp_file/startup/startup.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/7SCW.dir/cpp_file/startup/startup.cpp.i"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\User\Desktop\7SCW\cpp_file\startup\startup.cpp > CMakeFiles\7SCW.dir\cpp_file\startup\startup.cpp.i
+
+CMakeFiles/7SCW.dir/cpp_file/startup/startup.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/7SCW.dir/cpp_file/startup/startup.cpp.s"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\User\Desktop\7SCW\cpp_file\startup\startup.cpp -o CMakeFiles\7SCW.dir\cpp_file\startup\startup.cpp.s
 
 # Object files for target 7SCW
 7SCW_OBJECTS = \
 "CMakeFiles/7SCW.dir/main.cpp.obj" \
-"CMakeFiles/7SCW.dir/terminal_commands.cpp.obj" \
-"CMakeFiles/7SCW.dir/SHOW_ALL_STARTUP.cpp.obj"
+"CMakeFiles/7SCW.dir/cpp_file/terminal/terminal_commands.cpp.obj" \
+"CMakeFiles/7SCW.dir/cpp_file/startup/SHOW_ALL_STARTUP.cpp.obj" \
+"CMakeFiles/7SCW.dir/cpp_file/file_manager/file_manager.cpp.obj" \
+"CMakeFiles/7SCW.dir/cpp_file/startup/restoreStartupSettings.cpp.obj" \
+"CMakeFiles/7SCW.dir/cpp_file/terminal/terminal.cpp.obj" \
+"CMakeFiles/7SCW.dir/cpp_file/startup/startup.cpp.obj"
 
 # External object files for target 7SCW
 7SCW_EXTERNAL_OBJECTS =
 
 7SCW.exe: CMakeFiles/7SCW.dir/main.cpp.obj
-7SCW.exe: CMakeFiles/7SCW.dir/terminal_commands.cpp.obj
-7SCW.exe: CMakeFiles/7SCW.dir/SHOW_ALL_STARTUP.cpp.obj
+7SCW.exe: CMakeFiles/7SCW.dir/cpp_file/terminal/terminal_commands.cpp.obj
+7SCW.exe: CMakeFiles/7SCW.dir/cpp_file/startup/SHOW_ALL_STARTUP.cpp.obj
+7SCW.exe: CMakeFiles/7SCW.dir/cpp_file/file_manager/file_manager.cpp.obj
+7SCW.exe: CMakeFiles/7SCW.dir/cpp_file/startup/restoreStartupSettings.cpp.obj
+7SCW.exe: CMakeFiles/7SCW.dir/cpp_file/terminal/terminal.cpp.obj
+7SCW.exe: CMakeFiles/7SCW.dir/cpp_file/startup/startup.cpp.obj
 7SCW.exe: CMakeFiles/7SCW.dir/build.make
 7SCW.exe: CMakeFiles/7SCW.dir/linklibs.rsp
 7SCW.exe: CMakeFiles/7SCW.dir/objects1.rsp
 7SCW.exe: CMakeFiles/7SCW.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=C:\Users\User\Desktop\7SCW\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable 7SCW.exe"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=C:\Users\User\Desktop\7SCW\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Linking CXX executable 7SCW.exe"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\7SCW.dir\link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

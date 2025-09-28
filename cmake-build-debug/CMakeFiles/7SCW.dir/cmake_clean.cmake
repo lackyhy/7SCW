@@ -2,9 +2,13 @@ file(REMOVE_RECURSE
   "7SCW.exe"
   "7SCW.exe.manifest"
   "7SCW.pdb"
-  "CMakeFiles/7SCW.dir/SHOW_ALL_STARTUP.cpp.obj"
+  "CMakeFiles/7SCW.dir/cpp_file/file_manager/file_manager.cpp.obj"
+  "CMakeFiles/7SCW.dir/cpp_file/startup/SHOW_ALL_STARTUP.cpp.obj"
+  "CMakeFiles/7SCW.dir/cpp_file/startup/restoreStartupSettings.cpp.obj"
+  "CMakeFiles/7SCW.dir/cpp_file/startup/startup.cpp.obj"
+  "CMakeFiles/7SCW.dir/cpp_file/terminal/terminal.cpp.obj"
+  "CMakeFiles/7SCW.dir/cpp_file/terminal/terminal_commands.cpp.obj"
   "CMakeFiles/7SCW.dir/main.cpp.obj"
-  "CMakeFiles/7SCW.dir/terminal_commands.cpp.obj"
   "lib7SCW.dll.a"
 )
 

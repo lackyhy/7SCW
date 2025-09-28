@@ -122,32 +122,167 @@ depend:
 	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/build
 .PHONY : 7SCW/fast
 
-SHOW_ALL_STARTUP.obj: SHOW_ALL_STARTUP.cpp.obj
+cpp_file/file_manager/file_manager.obj: cpp_file/file_manager/file_manager.cpp.obj
 
-.PHONY : SHOW_ALL_STARTUP.obj
+.PHONY : cpp_file/file_manager/file_manager.obj
 
 # target to build an object file
-SHOW_ALL_STARTUP.cpp.obj:
-	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/SHOW_ALL_STARTUP.cpp.obj
-.PHONY : SHOW_ALL_STARTUP.cpp.obj
+cpp_file/file_manager/file_manager.cpp.obj:
+	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/cpp_file/file_manager/file_manager.cpp.obj
+.PHONY : cpp_file/file_manager/file_manager.cpp.obj
 
-SHOW_ALL_STARTUP.i: SHOW_ALL_STARTUP.cpp.i
+cpp_file/file_manager/file_manager.i: cpp_file/file_manager/file_manager.cpp.i
 
-.PHONY : SHOW_ALL_STARTUP.i
+.PHONY : cpp_file/file_manager/file_manager.i
 
 # target to preprocess a source file
-SHOW_ALL_STARTUP.cpp.i:
-	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/SHOW_ALL_STARTUP.cpp.i
-.PHONY : SHOW_ALL_STARTUP.cpp.i
+cpp_file/file_manager/file_manager.cpp.i:
+	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/cpp_file/file_manager/file_manager.cpp.i
+.PHONY : cpp_file/file_manager/file_manager.cpp.i
 
-SHOW_ALL_STARTUP.s: SHOW_ALL_STARTUP.cpp.s
+cpp_file/file_manager/file_manager.s: cpp_file/file_manager/file_manager.cpp.s
 
-.PHONY : SHOW_ALL_STARTUP.s
+.PHONY : cpp_file/file_manager/file_manager.s
 
 # target to generate assembly for a file
-SHOW_ALL_STARTUP.cpp.s:
-	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/SHOW_ALL_STARTUP.cpp.s
-.PHONY : SHOW_ALL_STARTUP.cpp.s
+cpp_file/file_manager/file_manager.cpp.s:
+	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/cpp_file/file_manager/file_manager.cpp.s
+.PHONY : cpp_file/file_manager/file_manager.cpp.s
+
+cpp_file/startup/SHOW_ALL_STARTUP.obj: cpp_file/startup/SHOW_ALL_STARTUP.cpp.obj
+
+.PHONY : cpp_file/startup/SHOW_ALL_STARTUP.obj
+
+# target to build an object file
+cpp_file/startup/SHOW_ALL_STARTUP.cpp.obj:
+	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/cpp_file/startup/SHOW_ALL_STARTUP.cpp.obj
+.PHONY : cpp_file/startup/SHOW_ALL_STARTUP.cpp.obj
+
+cpp_file/startup/SHOW_ALL_STARTUP.i: cpp_file/startup/SHOW_ALL_STARTUP.cpp.i
+
+.PHONY : cpp_file/startup/SHOW_ALL_STARTUP.i
+
+# target to preprocess a source file
+cpp_file/startup/SHOW_ALL_STARTUP.cpp.i:
+	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/cpp_file/startup/SHOW_ALL_STARTUP.cpp.i
+.PHONY : cpp_file/startup/SHOW_ALL_STARTUP.cpp.i
+
+cpp_file/startup/SHOW_ALL_STARTUP.s: cpp_file/startup/SHOW_ALL_STARTUP.cpp.s
+
+.PHONY : cpp_file/startup/SHOW_ALL_STARTUP.s
+
+# target to generate assembly for a file
+cpp_file/startup/SHOW_ALL_STARTUP.cpp.s:
+	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/cpp_file/startup/SHOW_ALL_STARTUP.cpp.s
+.PHONY : cpp_file/startup/SHOW_ALL_STARTUP.cpp.s
+
+cpp_file/startup/restoreStartupSettings.obj: cpp_file/startup/restoreStartupSettings.cpp.obj
+
+.PHONY : cpp_file/startup/restoreStartupSettings.obj
+
+# target to build an object file
+cpp_file/startup/restoreStartupSettings.cpp.obj:
+	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/cpp_file/startup/restoreStartupSettings.cpp.obj
+.PHONY : cpp_file/startup/restoreStartupSettings.cpp.obj
+
+cpp_file/startup/restoreStartupSettings.i: cpp_file/startup/restoreStartupSettings.cpp.i
+
+.PHONY : cpp_file/startup/restoreStartupSettings.i
+
+# target to preprocess a source file
+cpp_file/startup/restoreStartupSettings.cpp.i:
+	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/cpp_file/startup/restoreStartupSettings.cpp.i
+.PHONY : cpp_file/startup/restoreStartupSettings.cpp.i
+
+cpp_file/startup/restoreStartupSettings.s: cpp_file/startup/restoreStartupSettings.cpp.s
+
+.PHONY : cpp_file/startup/restoreStartupSettings.s
+
+# target to generate assembly for a file
+cpp_file/startup/restoreStartupSettings.cpp.s:
+	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/cpp_file/startup/restoreStartupSettings.cpp.s
+.PHONY : cpp_file/startup/restoreStartupSettings.cpp.s
+
+cpp_file/startup/startup.obj: cpp_file/startup/startup.cpp.obj
+
+.PHONY : cpp_file/startup/startup.obj
+
+# target to build an object file
+cpp_file/startup/startup.cpp.obj:
+	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/cpp_file/startup/startup.cpp.obj
+.PHONY : cpp_file/startup/startup.cpp.obj
+
+cpp_file/startup/startup.i: cpp_file/startup/startup.cpp.i
+
+.PHONY : cpp_file/startup/startup.i
+
+# target to preprocess a source file
+cpp_file/startup/startup.cpp.i:
+	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/cpp_file/startup/startup.cpp.i
+.PHONY : cpp_file/startup/startup.cpp.i
+
+cpp_file/startup/startup.s: cpp_file/startup/startup.cpp.s
+
+.PHONY : cpp_file/startup/startup.s
+
+# target to generate assembly for a file
+cpp_file/startup/startup.cpp.s:
+	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/cpp_file/startup/startup.cpp.s
+.PHONY : cpp_file/startup/startup.cpp.s
+
+cpp_file/terminal/terminal.obj: cpp_file/terminal/terminal.cpp.obj
+
+.PHONY : cpp_file/terminal/terminal.obj
+
+# target to build an object file
+cpp_file/terminal/terminal.cpp.obj:
+	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/cpp_file/terminal/terminal.cpp.obj
+.PHONY : cpp_file/terminal/terminal.cpp.obj
+
+cpp_file/terminal/terminal.i: cpp_file/terminal/terminal.cpp.i
+
+.PHONY : cpp_file/terminal/terminal.i
+
+# target to preprocess a source file
+cpp_file/terminal/terminal.cpp.i:
+	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/cpp_file/terminal/terminal.cpp.i
+.PHONY : cpp_file/terminal/terminal.cpp.i
+
+cpp_file/terminal/terminal.s: cpp_file/terminal/terminal.cpp.s
+
+.PHONY : cpp_file/terminal/terminal.s
+
+# target to generate assembly for a file
+cpp_file/terminal/terminal.cpp.s:
+	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/cpp_file/terminal/terminal.cpp.s
+.PHONY : cpp_file/terminal/terminal.cpp.s
+
+cpp_file/terminal/terminal_commands.obj: cpp_file/terminal/terminal_commands.cpp.obj
+
+.PHONY : cpp_file/terminal/terminal_commands.obj
+
+# target to build an object file
+cpp_file/terminal/terminal_commands.cpp.obj:
+	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/cpp_file/terminal/terminal_commands.cpp.obj
+.PHONY : cpp_file/terminal/terminal_commands.cpp.obj
+
+cpp_file/terminal/terminal_commands.i: cpp_file/terminal/terminal_commands.cpp.i
+
+.PHONY : cpp_file/terminal/terminal_commands.i
+
+# target to preprocess a source file
+cpp_file/terminal/terminal_commands.cpp.i:
+	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/cpp_file/terminal/terminal_commands.cpp.i
+.PHONY : cpp_file/terminal/terminal_commands.cpp.i
+
+cpp_file/terminal/terminal_commands.s: cpp_file/terminal/terminal_commands.cpp.s
+
+.PHONY : cpp_file/terminal/terminal_commands.s
+
+# target to generate assembly for a file
+cpp_file/terminal/terminal_commands.cpp.s:
+	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/cpp_file/terminal/terminal_commands.cpp.s
+.PHONY : cpp_file/terminal/terminal_commands.cpp.s
 
 main.obj: main.cpp.obj
 
@@ -176,33 +311,6 @@ main.cpp.s:
 	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/main.cpp.s
 .PHONY : main.cpp.s
 
-terminal_commands.obj: terminal_commands.cpp.obj
-
-.PHONY : terminal_commands.obj
-
-# target to build an object file
-terminal_commands.cpp.obj:
-	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/terminal_commands.cpp.obj
-.PHONY : terminal_commands.cpp.obj
-
-terminal_commands.i: terminal_commands.cpp.i
-
-.PHONY : terminal_commands.i
-
-# target to preprocess a source file
-terminal_commands.cpp.i:
-	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/terminal_commands.cpp.i
-.PHONY : terminal_commands.cpp.i
-
-terminal_commands.s: terminal_commands.cpp.s
-
-.PHONY : terminal_commands.s
-
-# target to generate assembly for a file
-terminal_commands.cpp.s:
-	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/terminal_commands.cpp.s
-.PHONY : terminal_commands.cpp.s
-
 # Help Target
 help:
 	@echo The following are some of the valid targets for this Makefile:
@@ -212,15 +320,27 @@ help:
 	@echo ... 7SCW
 	@echo ... edit_cache
 	@echo ... rebuild_cache
-	@echo ... SHOW_ALL_STARTUP.obj
-	@echo ... SHOW_ALL_STARTUP.i
-	@echo ... SHOW_ALL_STARTUP.s
+	@echo ... cpp_file/file_manager/file_manager.obj
+	@echo ... cpp_file/file_manager/file_manager.i
+	@echo ... cpp_file/file_manager/file_manager.s
+	@echo ... cpp_file/startup/SHOW_ALL_STARTUP.obj
+	@echo ... cpp_file/startup/SHOW_ALL_STARTUP.i
+	@echo ... cpp_file/startup/SHOW_ALL_STARTUP.s
+	@echo ... cpp_file/startup/restoreStartupSettings.obj
+	@echo ... cpp_file/startup/restoreStartupSettings.i
+	@echo ... cpp_file/startup/restoreStartupSettings.s
+	@echo ... cpp_file/startup/startup.obj
+	@echo ... cpp_file/startup/startup.i
+	@echo ... cpp_file/startup/startup.s
+	@echo ... cpp_file/terminal/terminal.obj
+	@echo ... cpp_file/terminal/terminal.i
+	@echo ... cpp_file/terminal/terminal.s
+	@echo ... cpp_file/terminal/terminal_commands.obj
+	@echo ... cpp_file/terminal/terminal_commands.i
+	@echo ... cpp_file/terminal/terminal_commands.s
 	@echo ... main.obj
 	@echo ... main.i
 	@echo ... main.s
-	@echo ... terminal_commands.obj
-	@echo ... terminal_commands.i
-	@echo ... terminal_commands.s
 .PHONY : help
 
 
