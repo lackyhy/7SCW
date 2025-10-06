@@ -522,14 +522,12 @@ private:
             system("cls");
             cout << "Disk Management: " << disk.drive << endl << endl;
 
+            HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
             for (int i = 0; i < options.size(); i++) {
-                if (i == selectedIndex) {
-                    cout << "> ";
-                }
-                else {
-                    cout << "  ";
-                }
-                cout << options[i] << endl;
+                bool isSel = (i == selectedIndex);
+                if (isSel) SetConsoleTextAttribute(hConsole, BACKGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+                cout << (isSel ? "> " : "  ") << options[i] << endl;
+                if (isSel) SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
             }
 
             int key = _getch();
@@ -736,6 +734,7 @@ private:
             system("cls");
             cout << "Additional Operations" << endl << endl;
 
+            HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
             for (int i = 0; i < options.size(); i++) {
                 // Skip separators when selecting
                 if (options[i] == "===================") {
@@ -743,13 +742,10 @@ private:
                     continue;
                 }
 
-                if (i == selectedIndex) {
-                    cout << ">";
-                }
-                else {
-                    cout << "  ";
-                }
-                cout << options[i] << endl;
+                bool isSel = (i == selectedIndex);
+                if (isSel) SetConsoleTextAttribute(hConsole, BACKGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+                cout << (isSel ? ">" : "  ") << options[i] << endl;
+                if (isSel) SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
             }
 
             int key = _getch();
@@ -813,16 +809,14 @@ private:
         cout << "Current directory: " << currentPath << endl;
         cout << "Use Up/Down arrows to navigate, Enter to select, 'q' to return to disk selection, 'b' to go back." << endl << endl;
 
+        HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
         for (int i = startIndex; i < min(startIndex + windowHeight, (int)files.size()); i++) {
-            if (i == selectedIndex) {
-                cout << ">";
-            }
-            else {
-                cout << "   ";
-            }
-
+            bool isSel = (i == selectedIndex);
+            if (isSel) SetConsoleTextAttribute(hConsole, BACKGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+            cout << (isSel ? ">" : "   ");
             cout << setw(40) << left << files[i].name;
             cout << setw(50) << left << files[i].fullPath << endl;
+            if (isSel) SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
         }
 
         cout << endl << endl;
@@ -1079,14 +1073,11 @@ private:
         cout << "File Manager" << endl;
         cout << "Use Up/Down arrows to navigate, Left/Right arrows for info, Enter to select, 'q' to quit, 'h' for help." << endl << endl;
 
+        HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
         for (int i = startIndex; i < min(startIndex + windowHeight, (int)drives.size()); i++) {
-            if (i == selectedIndex) {
-                cout << ">";
-            }
-            else {
-                cout << "   ";
-            }
-
+            bool isSel = (i == selectedIndex);
+            if (isSel) SetConsoleTextAttribute(hConsole, BACKGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+            cout << (isSel ? ">" : "   ");
             cout << setw(3) << drives[i].drive << "  ";
             cout << setw(20) << left << drives[i].label << "  ";
 
@@ -1112,9 +1103,10 @@ private:
                  << setw(8) << drives[i].totalSpace << " GB ";
 
             // Reset color to default
-            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+            if (!isSel) SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 
             cout << "Info >" << endl;
+            if (isSel) SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
         }
     }
 

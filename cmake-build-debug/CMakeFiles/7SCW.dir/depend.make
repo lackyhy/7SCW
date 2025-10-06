@@ -5,6 +5,17 @@ CMakeFiles/7SCW.dir/cpp_file/file_manager/file_manager.cpp.obj: ../cpp_file/file
 CMakeFiles/7SCW.dir/cpp_file/file_manager/file_manager.cpp.obj: ../h_file/file_manager/file_manager.h
 CMakeFiles/7SCW.dir/cpp_file/file_manager/file_manager.cpp.obj: ../h_file/main.h
 
+CMakeFiles/7SCW.dir/cpp_file/security/advanced_security_menu.cpp.obj: ../cpp_file/security/advanced_security_menu.cpp
+CMakeFiles/7SCW.dir/cpp_file/security/advanced_security_menu.cpp.obj: ../h_file/security/advanced_security_menu.h
+CMakeFiles/7SCW.dir/cpp_file/security/advanced_security_menu.cpp.obj: ../h_file/security/file_hash_verifier.h
+CMakeFiles/7SCW.dir/cpp_file/security/advanced_security_menu.cpp.obj: ../h_file/security/log_viewer.h
+
+CMakeFiles/7SCW.dir/cpp_file/security/file_hash_verifier.cpp.obj: ../cpp_file/security/file_hash_verifier.cpp
+CMakeFiles/7SCW.dir/cpp_file/security/file_hash_verifier.cpp.obj: ../h_file/security/file_hash_verifier.h
+
+CMakeFiles/7SCW.dir/cpp_file/security/log_viewer.cpp.obj: ../cpp_file/security/log_viewer.cpp
+CMakeFiles/7SCW.dir/cpp_file/security/log_viewer.cpp.obj: ../h_file/security/log_viewer.h
+
 CMakeFiles/7SCW.dir/cpp_file/startup/SHOW_ALL_STARTUP.cpp.obj: ../cpp_file/startup/SHOW_ALL_STARTUP.cpp
 CMakeFiles/7SCW.dir/cpp_file/startup/SHOW_ALL_STARTUP.cpp.obj: ../h_file/startup/SHOW_ALL_STARTUP.h
 
@@ -13,15 +24,22 @@ CMakeFiles/7SCW.dir/cpp_file/startup/restoreStartupSettings.cpp.obj: ../cpp_file
 CMakeFiles/7SCW.dir/cpp_file/startup/startup.cpp.obj: ../cpp_file/startup/startup.cpp
 CMakeFiles/7SCW.dir/cpp_file/startup/startup.cpp.obj: ../h_file/startup/startup.h
 
+CMakeFiles/7SCW.dir/cpp_file/terminal/speed_test.cpp.obj: ../cpp_file/terminal/speed_test.cpp
+CMakeFiles/7SCW.dir/cpp_file/terminal/speed_test.cpp.obj: ../h_file/terminal/speed_test.h
+
 CMakeFiles/7SCW.dir/cpp_file/terminal/terminal.cpp.obj: ../cpp_file/terminal/terminal.cpp
 CMakeFiles/7SCW.dir/cpp_file/terminal/terminal.cpp.obj: ../h_file/terminal/terminal.h
 CMakeFiles/7SCW.dir/cpp_file/terminal/terminal.cpp.obj: ../h_file/terminal/terminal_commands.h
 
 CMakeFiles/7SCW.dir/cpp_file/terminal/terminal_commands.cpp.obj: ../cpp_file/terminal/terminal_commands.cpp
+CMakeFiles/7SCW.dir/cpp_file/terminal/terminal_commands.cpp.obj: ../h_file/terminal/speed_test.h
 CMakeFiles/7SCW.dir/cpp_file/terminal/terminal_commands.cpp.obj: ../h_file/terminal/terminal_commands.h
 
 CMakeFiles/7SCW.dir/main.cpp.obj: ../h_file/file_manager/file_manager.h
 CMakeFiles/7SCW.dir/main.cpp.obj: ../h_file/main.h
+CMakeFiles/7SCW.dir/main.cpp.obj: ../h_file/security/advanced_security_menu.h
+CMakeFiles/7SCW.dir/main.cpp.obj: ../h_file/security/file_hash_verifier.h
+CMakeFiles/7SCW.dir/main.cpp.obj: ../h_file/security/log_viewer.h
 CMakeFiles/7SCW.dir/main.cpp.obj: ../h_file/startup/SHOW_ALL_STARTUP.h
 CMakeFiles/7SCW.dir/main.cpp.obj: ../h_file/startup/restoreStartupSettings.h
 CMakeFiles/7SCW.dir/main.cpp.obj: ../h_file/startup/startup.h

@@ -15,6 +15,9 @@
 #include "h_file/terminal/terminal.h"
 #include "h_file/file_manager/file_manager.h"
 #include "h_file/startup/SHOW_ALL_STARTUP.h"
+#include "h_file/security/file_hash_verifier.h"
+#include "h_file/security/log_viewer.h"
+#include "h_file/security/advanced_security_menu.h"
 #include "h_file/main.h"
 
 using namespace std;
@@ -72,7 +75,8 @@ void showHelp() {
     cout << "   Main Menu:" << endl;
     cout << "      - Use Up/Down arrows to navigate" << endl;
     cout << "      - Enter to select an option" << endl;
-    cout << "      - Right arrow to open custom terminal" << endl << endl;
+    cout << "      - Right arrow to open custom terminal" << endl;
+    cout << "      - Left arrow to open Advanced Security Menu" << endl << endl;
 
     cout << "   File Manager:" << endl;
     cout << "      - Navigate directories using Up/Down arrows" << endl;
@@ -111,27 +115,40 @@ void showHelp() {
     cout << "       - Supports bash-like commands and Windows commands" << endl;
     cout << "       - Type 'help' in terminal for available commands" << endl << endl;
 
+    cout << "   Advanced Security Menu:" << endl;
+    cout << "       - Available from main menu by pressing left arrow" << endl;
+    cout << "       - File Hash Verification: Check system file integrity" << endl;
+    cout << "       - Event Logs: View Windows, Application, Security, and System logs" << endl;
+    cout << "       - Custom Log Search: Search through logs with filters" << endl;
+    cout << "       - System Integrity Check: Comprehensive system health check" << endl;
+    cout << "       - Security Statistics: System security overview" << endl;
+    cout << "       - Export Security Report: Generate security reports" << endl << endl;
+
     cout << "   Additional Programs:" << endl;
     cout << "       - Access to various utilities such as SimpleUnlocker, Registry Workshop, ProcessHacker, etc." << endl << endl;
 
-    cout << "       Press any key to return to the main menu..." << endl;
+    cout << "       Press any key to return to the main menu..." << endl << endl;
+    cout << "   Arguments:" << endl;
+    cout << "       -clear_tempfile - clear temp file" << endl;
+    cout << "       -clear_autorun - clear Startup" << endl;
+    cout << "       -safemod - run in safe mode (works in current terminal without admin rights)" << endl;
+
     _getch();
 }
 
 // Function to draw menu
 void drawMenu(const vector<string>& menuItems, int selectedIndex) {
     system("cls");
+
     cout << "Main Menu" << endl;
     cout << "Use Up and Down arrows to navigate, Enter to select, 'h' for help, 'q' to exit" << endl << endl;
 
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     for (int i = 0; i < menuItems.size(); i++) {
-        if (i == selectedIndex) {
-            cout << ">";
-        }
-        else {
-            cout << "   ";
-        }
-        cout << menuItems[i] << endl;
+        bool isSel = (i == selectedIndex);
+        if (isSel) SetConsoleTextAttribute(hConsole, BACKGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+        cout << (isSel ? ">" : "   ") << menuItems[i] << endl;
+        if (isSel) SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
     }
 
     CONSOLE_SCREEN_BUFFER_INFO csbi;
@@ -145,182 +162,13 @@ void drawMenu(const vector<string>& menuItems, int selectedIndex) {
         cout << "-";
     }
 
-    cout << "Version: 8.3.5 | Created by: LCKY |GitHub: https://github.com/lackyhy/7SCW" << endl;
+    cout << "Version: 9.1.1 | Created by: LCKY |GitHub: https://github.com/lackyhy/7SCW" << endl;
 
     for(int i = 0; i < consoleWidth; ++i) {
         cout << "-";
     }
 }
 
-
-int main() {
-    // Check if running as administrator
-    BOOL isAdmin = FALSE;
-    SID_IDENTIFIER_AUTHORITY NtAuthority = SECURITY_NT_AUTHORITY;
-    PSID AdministratorsGroup;
-
-    if (AllocateAndInitializeSid(&NtAuthority, 2, SECURITY_BUILTIN_DOMAIN_RID,
-                                 DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0, &AdministratorsGroup)) {
-        if (!CheckTokenMembership(NULL, AdministratorsGroup, &isAdmin)) {
-            isAdmin = FALSE;
-        }
-        FreeSid(AdministratorsGroup);
-    }
-
-    if (!isAdmin) {
-        cout << "The program must be run as administrator!" << endl;
-        cout << "Press any key to exit...";
-        _getch();
-        return 1;
-    }
-
-    SetConsoleTitleA("Menu System");
-    hideCursor();
-
-    // Register console control handler
-    if (!SetConsoleCtrlHandler(CtrlHandler, TRUE)) {
-        // Handle error if registration fails
-        cout << "Error: Failed to register Ctrl+C handler!" << endl;
-        // Decide whether to exit or continue
-    }
-
-    vector<string> menuItems = {
-            "File Manager",
-            "Check Startup",
-            "Users\n",
-            "Clear TEMP Files",
-            "System Info\n",
-            "CMD",
-            "POWERSHELL\n",
-            "Help",
-            "Exit"
-    };
-
-    int selectedIndex = 0;
-    bool running = true;
-
-    while (running) {
-        drawMenu(menuItems, selectedIndex);
-
-        int key = _getch();
-        if (g_ctrlCPressed) { // Check for Ctrl+C
-            g_ctrlCPressed = FALSE; // Reset the flag
-            running = false; // Exit the main menu loop
-            continue; // Skip the rest of the loop iteration
-        }
-        if (key == 224) { // Arrow key pressed
-            key = _getch();
-            switch (key) {
-                case 72: // Up arrow
-                    selectedIndex = (selectedIndex - 1 + menuItems.size()) % menuItems.size();
-                    break;
-                case 80: // Down arrow
-                    selectedIndex = (selectedIndex + 1) % menuItems.size();
-                    break;
-                case 77: // Right arrow - Open custom terminal
-                    customTerminal();
-                    break;
-            }
-        }
-        else if (key == 13) { // Enter key
-            switch (selectedIndex) {
-                case 0: // File Manager
-                    file_manger();
-                    break;
-                case 1: // Check Startup
-                    showStartupLocationsMenu();
-                    break;
-                case 2: // Users
-                    system("cls");
-                    cout << "Listing Users:" << endl << endl;
-                    system("net user");
-                    cout << "\nPress any key to continue...";
-                    _getch();
-                    break;
-                case 3: // Clear Temp File
-                {
-                    system("cls");
-                    cout << "Cleaning temporary files..." << endl << endl;
-
-                    CleanupResult totalCleanupResult = {0}; // Initialize total result
-
-                    // Get system temp path
-                    char tempPath[MAX_PATH];
-                    if (GetTempPathA(MAX_PATH, tempPath) != 0) {
-                        cout << "System TEMP directory: " << tempPath << endl;
-                        CleanupResult systemResult = cleanTempDirectory(tempPath);
-                        totalCleanupResult.deletedCount += systemResult.deletedCount;
-                        totalCleanupResult.cleanedSize.QuadPart += systemResult.cleanedSize.QuadPart;
-                    }
-
-                    // Get Windows temp path
-                    char windowsTempPath[MAX_PATH];
-                    if (GetWindowsDirectoryA(windowsTempPath, MAX_PATH) != 0) {
-                        string winTemp = string(windowsTempPath) + "\\Temp";
-                        cout << "\nWindows TEMP directory: " << winTemp << endl;
-                        CleanupResult windowsResult = cleanTempDirectory(winTemp);
-                        totalCleanupResult.deletedCount += windowsResult.deletedCount;
-                        totalCleanupResult.cleanedSize.QuadPart += windowsResult.cleanedSize.QuadPart;
-                    }
-
-                    // Get user temp path
-                    char userTempPath[MAX_PATH];
-                    if (SHGetFolderPathA(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, userTempPath) == S_OK) {
-                        string userTemp = string(userTempPath) + "\\Temp";
-                        cout << "\nUser TEMP directory: " << userTemp << endl;
-                        CleanupResult userResult = cleanTempDirectory(userTemp);
-                        totalCleanupResult.deletedCount += userResult.deletedCount;
-                        totalCleanupResult.cleanedSize.QuadPart += userResult.cleanedSize.QuadPart;
-                    }
-
-                    cout << "\nTemporary files cleanup completed!" << endl;
-                    cout << "Summary:" << endl;
-                    cout << "  Deleted items: " << totalCleanupResult.deletedCount << endl;
-                    cout << "  Cleaned space: " << formatFileSize(totalCleanupResult.cleanedSize.QuadPart) << endl;
-
-                    cout << "Press any key to continue...";
-                    _getch();
-                    break;
-                }
-                case 4: // System Info
-                    system("cls");
-                    cout << "System Information:" << endl << endl;
-                    cout << "Windows Version: ";
-                    system("ver");
-                    cout << "\nComputer Name: ";
-                    system("hostname");
-                    cout << "\nPress any key to continue...";
-                    _getch();
-                    break;
-                case 5: // CMD
-                    system("cls");
-                    system("cmd");
-                    _getch();
-                    break;
-                case 6: // POWERSHELL
-                    system("cls");
-                    system("powershell");
-                    _getch();
-                    break;
-                case 7: // Help
-                    showHelp();
-                    break;
-                case 8: // Exit
-                    running = false;
-                    break;
-            }
-        }
-        else if (key == 'h' || key == 'H') {
-            showHelp();
-        }
-        else if (key == 'q' || key == 'Q') {
-            running = false;
-        }
-    }
-
-    showCursor();
-    return 0;
-}
 
 void showStartupLocationsMenu() {
     vector<string> options = {
@@ -339,22 +187,19 @@ void showStartupLocationsMenu() {
         cout << "Check Startup Locations" << endl;
         cout << "Use Up and Down arrows to navigate, Enter to select, 'q' to quit" << endl << endl;
 
+        HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
         for (int i = 0; i < options.size(); i++) {
-            if (i == selectedIndex) {
-                cout << ">";
-            }
-            else {
-                cout << "   ";
-            }
+            bool isSel = (i == selectedIndex);
+            if (isSel) SetConsoleTextAttribute(hConsole, BACKGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
 
-            // Set color for "Restore to original" option
+            // Set color for "Restore to original" option text
             if (options[i] == "Restore to original\n") {
-                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_INTENSITY);
-                cout << options[i] << endl;
-                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-            } else {
-                cout << options[i] << endl;
+                if (!isSel) SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_INTENSITY);
             }
+            cout << (isSel ? ">" : "   ") << options[i] << endl;
+
+            // Reset to default after each line
+            SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
         }
 
         int key = _getch();
@@ -370,7 +215,7 @@ void showStartupLocationsMenu() {
                     selectedIndex = (selectedIndex - 1 + options.size()) % options.size();
                     break;
                 case 77: // Right arrow - Show ALL Startup
-                        SHOW_ALL_STARTUP();
+                    SHOW_ALL_STARTUP();
                     break;
                 case 80: // Down arrow
                     selectedIndex = (selectedIndex + 1) % options.size();
@@ -404,3 +249,459 @@ void showStartupLocationsMenu() {
         }
     }
 }
+
+void clear_temp_file() {
+    {
+        system("cls");
+        cout << "Cleaning temporary files..." << endl << endl;
+
+        CleanupResult totalCleanupResult = {0}; // Initialize total result
+
+        // Get system temp path
+        char tempPath[MAX_PATH];
+        if (GetTempPathA(MAX_PATH, tempPath) != 0) {
+            cout << "System TEMP directory: " << tempPath << endl;
+            CleanupResult systemResult = cleanTempDirectory(tempPath);
+            totalCleanupResult.deletedCount += systemResult.deletedCount;
+            totalCleanupResult.cleanedSize.QuadPart += systemResult.cleanedSize.QuadPart;
+        }
+
+        // Get Windows temp path
+        char windowsTempPath[MAX_PATH];
+        if (GetWindowsDirectoryA(windowsTempPath, MAX_PATH) != 0) {
+            string winTemp = string(windowsTempPath) + "\\Temp";
+            cout << "\nWindows TEMP directory: " << winTemp << endl;
+            CleanupResult windowsResult = cleanTempDirectory(winTemp);
+            totalCleanupResult.deletedCount += windowsResult.deletedCount;
+            totalCleanupResult.cleanedSize.QuadPart += windowsResult.cleanedSize.QuadPart;
+        }
+
+        // Get user temp path
+        char userTempPath[MAX_PATH];
+        if (SHGetFolderPathA(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, userTempPath) == S_OK) {
+            string userTemp = string(userTempPath) + "\\Temp";
+            cout << "\nUser TEMP directory: " << userTemp << endl;
+            CleanupResult userResult = cleanTempDirectory(userTemp);
+            totalCleanupResult.deletedCount += userResult.deletedCount;
+            totalCleanupResult.cleanedSize.QuadPart += userResult.cleanedSize.QuadPart;
+        }
+
+        cout << "\nTemporary files cleanup completed!" << endl;
+        cout << "Summary:" << endl;
+        cout << "  Deleted items: " << totalCleanupResult.deletedCount << endl;
+        cout << "  Cleaned space: " << formatFileSize(totalCleanupResult.cleanedSize.QuadPart) << endl;
+
+        cout << "Press any key to continue...";
+        _getch();
+        return;
+    }
+}
+
+void main_menu(bool safemod, bool isAdmin) {
+    BOOL safemode = safemod;
+
+    BOOL clear_tempfile = FALSE;
+    BOOL clear_autorun = FALSE;
+
+    if ( safemod ) {
+        stringstream title;
+        title << "Menu System [SAFE MODE], SafeMode: " << (safemode ? "true" : "false") << ", isAdmin: " << (isAdmin ? "true" : "false");
+        SetConsoleTitleA(title.str().c_str());
+        // В safemode работаем в текущем терминале без создания нового окна
+        vector <string> menuItems = {
+                "File Manager",
+                "Check Startup",
+                "Users\n",
+                "Clear TEMP Files",
+                "System Info\n",
+                "Log Viewer & Security",
+                "File Hash Verification\n",
+                "CMD",
+                "POWERSHELL\n",
+                "Help",
+                "Exit"
+        };
+
+        int selectedIndex = 0;
+        bool running = true;
+
+        while (running) {
+            drawMenu(menuItems, selectedIndex);
+
+            int key = _getch();
+            if (g_ctrlCPressed) { // Check for Ctrl+C
+                g_ctrlCPressed = FALSE; // Reset the flag
+                running = false; // Exit the main menu loop
+                continue; // Skip the rest of the loop iteration
+            }
+            if (key == 224) { // Arrow key pressed
+                key = _getch();
+                switch (key) {
+                    case 72: // Up arrow
+                        selectedIndex = (selectedIndex - 1 + menuItems.size()) % menuItems.size();
+                        break;
+                    case 75: // Left arrow - Advanced Security Menu
+                        showAdvancedSecurityMenu();
+                        break;
+                    case 77: // Right arrow - Open custom terminal
+                        customTerminal();
+                        break;
+                    case 80: // Down arrow
+                        selectedIndex = (selectedIndex + 1) % menuItems.size();
+                        break;
+                }
+            } else if (key == 13) { // Enter key
+                switch (selectedIndex) {
+                    case 0: // File Manager
+                        file_manger();
+                        break;
+                    case 1: // Check Startup
+                        showStartupLocationsMenu();
+                        break;
+                    case 2: // Users
+                        system("cls");
+                        cout << "Listing Users:" << endl << endl;
+                        system("net user");
+                        cout << "\nPress any key to continue...";
+                        _getch();
+                        break;
+                    case 3: // Clear Temp File
+                        clear_temp_file();
+                        _getch();
+                        break;
+                    case 4: // System Info
+                        system("cls");
+                        cout << "System Information:" << endl << endl;
+                        cout << "Windows Version: ";
+                        system("ver");
+                        cout << "\nComputer Name: ";
+                        system("hostname");
+                        cout << "\nPress any key to continue...";
+                        _getch();
+                        break;
+                    case 5: // CMD
+                        system("cls");
+                        system("cmd");
+                        _getch();
+                        break;
+                    case 6: // POWERSHELL
+                        system("cls");
+                        system("powershell");
+                        _getch();
+                        break;
+                    case 7: // Help
+                        showHelp();
+                        break;
+                    case 8: // Exit
+                        running = false;
+                        break;
+                }
+            } else if (key == 'h' || key == 'H') {
+                showHelp();
+            } else if (key == 'q' || key == 'Q') {
+                running = false;
+            }
+        }
+        return;
+
+    } else {
+
+        if (!isAdmin) {
+            cout << "The program must be run as administrator!" << endl;
+            cout << "Run with '-safemod' argument for limited functionality without admin rights." << endl;
+            cout << "Press any key to exit...";
+            _getch();
+            return;
+        }
+        stringstream title;
+        title << (safemode ? "Menu System [SAFE MODE]" : "Menu System") << ",            isAdmin: " << (isAdmin ? "true" : "false");
+        SetConsoleTitleA(title.str().c_str());
+        hideCursor();
+
+
+        // Register console control handler
+        if (!SetConsoleCtrlHandler(CtrlHandler, TRUE)) {
+            // Handle error if registration fails
+            cout << "Error: Failed to register Ctrl+C handler!" << endl;
+            // Decide whether to exit or continue
+        }
+
+        vector <string> menuItems = {
+                "File Manager",
+                "Check Startup",
+                "Users\n",
+                "Clear TEMP Files",
+                "System Info\n",
+                "CMD",
+                "POWERSHELL\n",
+                "Help",
+                "Exit"
+        };
+
+        int selectedIndex = 0;
+        bool running = true;
+
+        while (running) {
+            drawMenu(menuItems, selectedIndex);
+
+            int key = _getch();
+            if (g_ctrlCPressed) { // Check for Ctrl+C
+                g_ctrlCPressed = FALSE; // Reset the flag
+                running = false; // Exit the main menu loop
+                continue; // Skip the rest of the loop iteration
+            }
+            if (key == 224) { // Arrow key pressed
+                key = _getch();
+                switch (key) {
+                    case 72: // Up arrow
+                        selectedIndex = (selectedIndex - 1 + menuItems.size()) % menuItems.size();
+                        break;
+                    case 75: // Left arrow - Advanced Security Menu
+                        showAdvancedSecurityMenu();
+                        break;
+                    case 77: // Right arrow - Open custom terminal
+                        customTerminal();
+                        break;
+                    case 80: // Down arrow
+                        selectedIndex = (selectedIndex + 1) % menuItems.size();
+                        break;
+                }
+            } else if (key == 13) { // Enter key
+                switch (selectedIndex) {
+                    case 0: // File Manager
+                        file_manger();
+                        break;
+                    case 1: // Check Startup
+                        showStartupLocationsMenu();
+                        break;
+                    case 2: // Users
+                        system("cls");
+                        cout << "Listing Users:" << endl << endl;
+                        system("net user");
+                        cout << "\nPress any key to continue...";
+                        _getch();
+                        break;
+                    case 3: // Clear Temp File
+                        clear_temp_file();
+                        _getch();
+                        break;
+                    case 4: // System Info
+                        system("cls");
+                        cout << "System Information:" << endl << endl;
+                        cout << "Windows Version: ";
+                        system("ver");
+                        cout << "\nComputer Name: ";
+                        system("hostname");
+                        cout << "\nPress any key to continue...";
+                        _getch();
+                        break;
+                    case 5: // CMD
+                        system("cls");
+                        system("cmd");
+                        _getch();
+                        break;
+                    case 6: // POWERSHELL
+                        system("cls");
+                        system("powershell");
+                        _getch();
+                        break;
+                    case 7: // Help
+                        showHelp();
+                        break;
+                    case 8: // Exit
+                        running = false;
+                        break;
+                }
+            } else if (key == 'h' || key == 'H') {
+                showHelp();
+            } else if (key == 'q' || key == 'Q') {
+                running = false;
+            }
+        }
+
+        showCursor();
+        return;
+    }
+};
+
+int main(int argc, char *argv[]) {
+
+    BOOL isAdmin = FALSE;
+    BOOL safemode = FALSE;
+    BOOL clear_tempfile = FALSE;
+    BOOL clear_autorun = FALSE;
+
+    // Проверка на права администратора
+    SID_IDENTIFIER_AUTHORITY NtAuthority = SECURITY_NT_AUTHORITY;
+    PSID AdministratorsGroup;
+    if (AllocateAndInitializeSid(&NtAuthority, 2,
+                                 SECURITY_BUILTIN_DOMAIN_RID,
+                                 DOMAIN_ALIAS_RID_ADMINS,
+                                 0, 0, 0, 0, 0, 0,
+                                 &AdministratorsGroup)) {
+        CheckTokenMembership(NULL, AdministratorsGroup, &isAdmin);
+        FreeSid(AdministratorsGroup);
+    }
+
+    // Обработка аргументов
+    for (int i = 1; i < argc; i++) {
+        string arg = argv[i];
+        if (arg == "-safemode" || arg == "-safemod") {
+            safemode = TRUE;
+        } else if (arg == "-clear_tempfile") {
+            clear_tempfile = TRUE;
+        } else if (arg == "-clear_autorun") {
+            clear_autorun = TRUE;
+        }
+    }
+
+    // Выполнение в зависимости от режима
+    if (clear_tempfile) {
+        clear_temp_file();
+        return 0;
+    }
+
+    if (clear_autorun) {
+        restoreStartupSettings();
+        return 0;
+    }
+
+    // Запуск меню
+    main_menu(safemode, isAdmin);
+    return 0;
+
+}
+
+//    if ( safemode ) {
+//        main_menu(true);
+//    } else if ( clear_tempfile ) {
+//        clear_temp_file();
+//        return 0;
+//    } else if ( clear_autorun ) {
+//        restoreStartupSettings();
+//        return 0;
+//    }
+
+        //
+//        if (AllocateAndInitializeSid(&NtAuthority, 2, SECURITY_BUILTIN_DOMAIN_RID,
+//                                     DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0, &AdministratorsGroup)) {
+//            if (!CheckTokenMembership(NULL, AdministratorsGroup, &isAdmin)) {
+//                isAdmin = FALSE;
+//            }
+//            FreeSid(AdministratorsGroup);
+//        }
+//
+//        if (!isAdmin) {
+//            cout << "The program must be run as administrator!" << endl;
+//            cout << "Run with '-safemod' argument for limited functionality without admin rights." << endl;
+//            cout << "Press any key to exit...";
+//            _getch();
+//            return 1;
+//        }
+//
+//
+//        SetConsoleTitleA(safemode ? "Menu System [SAFE MODE]" : "Menu System");
+//        hideCursor();
+//
+//
+//        // Register console control handler
+//        if (!SetConsoleCtrlHandler(CtrlHandler, TRUE)) {
+//            // Handle error if registration fails
+//            cout << "Error: Failed to register Ctrl+C handler!" << endl;
+//            // Decide whether to exit or continue
+//        }
+//
+//        vector <string> menuItems = {
+//                "File Manager",
+//                "Check Startup",
+//                "Users\n",
+//                "Clear TEMP Files",
+//                "System Info\n",
+//                "CMD",
+//                "POWERSHELL\n",
+//                "Help",
+//                "Exit"
+//        };
+//
+//        int selectedIndex = 0;
+//        bool running = true;
+//
+//        while (running) {
+//            drawMenu(menuItems, selectedIndex);
+//
+//            int key = _getch();
+//            if (g_ctrlCPressed) { // Check for Ctrl+C
+//                g_ctrlCPressed = FALSE; // Reset the flag
+//                running = false; // Exit the main menu loop
+//                continue; // Skip the rest of the loop iteration
+//            }
+//            if (key == 224) { // Arrow key pressed
+//                key = _getch();
+//                switch (key) {
+//                    case 72: // Up arrow
+//                        selectedIndex = (selectedIndex - 1 + menuItems.size()) % menuItems.size();
+//                        break;
+//                    case 80: // Down arrow
+//                        selectedIndex = (selectedIndex + 1) % menuItems.size();
+//                        break;
+//                    case 77: // Right arrow - Open custom terminal
+//                        customTerminal();
+//                        break;
+//                }
+//            } else if (key == 13) { // Enter key
+//                switch (selectedIndex) {
+//                    case 0: // File Manager
+//                        file_manger();
+//                        break;
+//                    case 1: // Check Startup
+//                        showStartupLocationsMenu();
+//                        break;
+//                    case 2: // Users
+//                        system("cls");
+//                        cout << "Listing Users:" << endl << endl;
+//                        system("net user");
+//                        cout << "\nPress any key to continue...";
+//                        _getch();
+//                        break;
+//                    case 3: // Clear Temp File
+//                        clear_temp_file();
+//                        _getch();
+//                        break;
+//                    case 4: // System Info
+//                        system("cls");
+//                        cout << "System Information:" << endl << endl;
+//                        cout << "Windows Version: ";
+//                        system("ver");
+//                        cout << "\nComputer Name: ";
+//                        system("hostname");
+//                        cout << "\nPress any key to continue...";
+//                        _getch();
+//                        break;
+//                    case 5: // CMD
+//                        system("cls");
+//                        system("cmd");
+//                        _getch();
+//                        break;
+//                    case 6: // POWERSHELL
+//                        system("cls");
+//                        system("powershell");
+//                        _getch();
+//                        break;
+//                    case 7: // Help
+//                        showHelp();
+//                        break;
+//                    case 8: // Exit
+//                        running = false;
+//                        break;
+//                }
+//            } else if (key == 'h' || key == 'H') {
+//                showHelp();
+//            } else if (key == 'q' || key == 'Q') {
+//                running = false;
+//            }
+//        }
+//
+//        showCursor();
+//        return 0;
+//    }
+//}

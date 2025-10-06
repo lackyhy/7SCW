@@ -147,6 +147,58 @@ CMakeFiles/7SCW.dir/cpp_file/startup/startup.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/7SCW.dir/cpp_file/startup/startup.cpp.s"
 	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\User\Desktop\7SCW\cpp_file\startup\startup.cpp -o CMakeFiles\7SCW.dir\cpp_file\startup\startup.cpp.s
 
+CMakeFiles/7SCW.dir/cpp_file/terminal/speed_test.cpp.obj: CMakeFiles/7SCW.dir/flags.make
+CMakeFiles/7SCW.dir/cpp_file/terminal/speed_test.cpp.obj: ../cpp_file/terminal/speed_test.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=C:\Users\User\Desktop\7SCW\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/7SCW.dir/cpp_file/terminal/speed_test.cpp.obj"
+	C:\MinGW\bin\g++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles\7SCW.dir\cpp_file\terminal\speed_test.cpp.obj -c C:\Users\User\Desktop\7SCW\cpp_file\terminal\speed_test.cpp
+
+CMakeFiles/7SCW.dir/cpp_file/terminal/speed_test.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/7SCW.dir/cpp_file/terminal/speed_test.cpp.i"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\User\Desktop\7SCW\cpp_file\terminal\speed_test.cpp > CMakeFiles\7SCW.dir\cpp_file\terminal\speed_test.cpp.i
+
+CMakeFiles/7SCW.dir/cpp_file/terminal/speed_test.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/7SCW.dir/cpp_file/terminal/speed_test.cpp.s"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\User\Desktop\7SCW\cpp_file\terminal\speed_test.cpp -o CMakeFiles\7SCW.dir\cpp_file\terminal\speed_test.cpp.s
+
+CMakeFiles/7SCW.dir/cpp_file/security/file_hash_verifier.cpp.obj: CMakeFiles/7SCW.dir/flags.make
+CMakeFiles/7SCW.dir/cpp_file/security/file_hash_verifier.cpp.obj: ../cpp_file/security/file_hash_verifier.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=C:\Users\User\Desktop\7SCW\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/7SCW.dir/cpp_file/security/file_hash_verifier.cpp.obj"
+	C:\MinGW\bin\g++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles\7SCW.dir\cpp_file\security\file_hash_verifier.cpp.obj -c C:\Users\User\Desktop\7SCW\cpp_file\security\file_hash_verifier.cpp
+
+CMakeFiles/7SCW.dir/cpp_file/security/file_hash_verifier.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/7SCW.dir/cpp_file/security/file_hash_verifier.cpp.i"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\User\Desktop\7SCW\cpp_file\security\file_hash_verifier.cpp > CMakeFiles\7SCW.dir\cpp_file\security\file_hash_verifier.cpp.i
+
+CMakeFiles/7SCW.dir/cpp_file/security/file_hash_verifier.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/7SCW.dir/cpp_file/security/file_hash_verifier.cpp.s"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\User\Desktop\7SCW\cpp_file\security\file_hash_verifier.cpp -o CMakeFiles\7SCW.dir\cpp_file\security\file_hash_verifier.cpp.s
+
+CMakeFiles/7SCW.dir/cpp_file/security/log_viewer.cpp.obj: CMakeFiles/7SCW.dir/flags.make
+CMakeFiles/7SCW.dir/cpp_file/security/log_viewer.cpp.obj: ../cpp_file/security/log_viewer.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=C:\Users\User\Desktop\7SCW\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/7SCW.dir/cpp_file/security/log_viewer.cpp.obj"
+	C:\MinGW\bin\g++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles\7SCW.dir\cpp_file\security\log_viewer.cpp.obj -c C:\Users\User\Desktop\7SCW\cpp_file\security\log_viewer.cpp
+
+CMakeFiles/7SCW.dir/cpp_file/security/log_viewer.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/7SCW.dir/cpp_file/security/log_viewer.cpp.i"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\User\Desktop\7SCW\cpp_file\security\log_viewer.cpp > CMakeFiles\7SCW.dir\cpp_file\security\log_viewer.cpp.i
+
+CMakeFiles/7SCW.dir/cpp_file/security/log_viewer.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/7SCW.dir/cpp_file/security/log_viewer.cpp.s"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\User\Desktop\7SCW\cpp_file\security\log_viewer.cpp -o CMakeFiles\7SCW.dir\cpp_file\security\log_viewer.cpp.s
+
+CMakeFiles/7SCW.dir/cpp_file/security/advanced_security_menu.cpp.obj: CMakeFiles/7SCW.dir/flags.make
+CMakeFiles/7SCW.dir/cpp_file/security/advanced_security_menu.cpp.obj: ../cpp_file/security/advanced_security_menu.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=C:\Users\User\Desktop\7SCW\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/7SCW.dir/cpp_file/security/advanced_security_menu.cpp.obj"
+	C:\MinGW\bin\g++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles\7SCW.dir\cpp_file\security\advanced_security_menu.cpp.obj -c C:\Users\User\Desktop\7SCW\cpp_file\security\advanced_security_menu.cpp
+
+CMakeFiles/7SCW.dir/cpp_file/security/advanced_security_menu.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/7SCW.dir/cpp_file/security/advanced_security_menu.cpp.i"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\User\Desktop\7SCW\cpp_file\security\advanced_security_menu.cpp > CMakeFiles\7SCW.dir\cpp_file\security\advanced_security_menu.cpp.i
+
+CMakeFiles/7SCW.dir/cpp_file/security/advanced_security_menu.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/7SCW.dir/cpp_file/security/advanced_security_menu.cpp.s"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\User\Desktop\7SCW\cpp_file\security\advanced_security_menu.cpp -o CMakeFiles\7SCW.dir\cpp_file\security\advanced_security_menu.cpp.s
+
 # Object files for target 7SCW
 7SCW_OBJECTS = \
 "CMakeFiles/7SCW.dir/main.cpp.obj" \
@@ -155,7 +207,11 @@ CMakeFiles/7SCW.dir/cpp_file/startup/startup.cpp.s: cmake_force
 "CMakeFiles/7SCW.dir/cpp_file/file_manager/file_manager.cpp.obj" \
 "CMakeFiles/7SCW.dir/cpp_file/startup/restoreStartupSettings.cpp.obj" \
 "CMakeFiles/7SCW.dir/cpp_file/terminal/terminal.cpp.obj" \
-"CMakeFiles/7SCW.dir/cpp_file/startup/startup.cpp.obj"
+"CMakeFiles/7SCW.dir/cpp_file/startup/startup.cpp.obj" \
+"CMakeFiles/7SCW.dir/cpp_file/terminal/speed_test.cpp.obj" \
+"CMakeFiles/7SCW.dir/cpp_file/security/file_hash_verifier.cpp.obj" \
+"CMakeFiles/7SCW.dir/cpp_file/security/log_viewer.cpp.obj" \
+"CMakeFiles/7SCW.dir/cpp_file/security/advanced_security_menu.cpp.obj"
 
 # External object files for target 7SCW
 7SCW_EXTERNAL_OBJECTS =
@@ -167,11 +223,15 @@ CMakeFiles/7SCW.dir/cpp_file/startup/startup.cpp.s: cmake_force
 7SCW.exe: CMakeFiles/7SCW.dir/cpp_file/startup/restoreStartupSettings.cpp.obj
 7SCW.exe: CMakeFiles/7SCW.dir/cpp_file/terminal/terminal.cpp.obj
 7SCW.exe: CMakeFiles/7SCW.dir/cpp_file/startup/startup.cpp.obj
+7SCW.exe: CMakeFiles/7SCW.dir/cpp_file/terminal/speed_test.cpp.obj
+7SCW.exe: CMakeFiles/7SCW.dir/cpp_file/security/file_hash_verifier.cpp.obj
+7SCW.exe: CMakeFiles/7SCW.dir/cpp_file/security/log_viewer.cpp.obj
+7SCW.exe: CMakeFiles/7SCW.dir/cpp_file/security/advanced_security_menu.cpp.obj
 7SCW.exe: CMakeFiles/7SCW.dir/build.make
 7SCW.exe: CMakeFiles/7SCW.dir/linklibs.rsp
 7SCW.exe: CMakeFiles/7SCW.dir/objects1.rsp
 7SCW.exe: CMakeFiles/7SCW.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=C:\Users\User\Desktop\7SCW\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Linking CXX executable 7SCW.exe"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=C:\Users\User\Desktop\7SCW\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Linking CXX executable 7SCW.exe"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\7SCW.dir\link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

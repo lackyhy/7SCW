@@ -1,4 +1,5 @@
 #include "../../h_file/terminal/terminal_commands.h"
+#include "../../h_file/terminal/speed_test.h"
 #include <random>
 #include <chrono>
 #include <ctime>
@@ -117,7 +118,8 @@ void showNetworkMenu() {
         cout << "[3] Show saved networks" << endl;
         cout << "[4] Show available networks" << endl;
         cout << "[5] Ping specific site" << endl;
-        cout << "[6] Back to terminal" << endl;
+        cout << "[6] Speed test" << endl;
+        cout << "[7] Back to terminal" << endl;
         cout << endl;
         cout << "Enter your choice (1-6): ";
 
@@ -148,6 +150,9 @@ void showNetworkMenu() {
             }
                 break;
             case '6':
+                speed_test();
+                break;
+            case '7':
                 cout << "Returning to terminal..." << endl;
                 running = false;
                 break;

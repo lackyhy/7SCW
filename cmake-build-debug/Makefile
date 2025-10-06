@@ -149,6 +149,87 @@ cpp_file/file_manager/file_manager.cpp.s:
 	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/cpp_file/file_manager/file_manager.cpp.s
 .PHONY : cpp_file/file_manager/file_manager.cpp.s
 
+cpp_file/security/advanced_security_menu.obj: cpp_file/security/advanced_security_menu.cpp.obj
+
+.PHONY : cpp_file/security/advanced_security_menu.obj
+
+# target to build an object file
+cpp_file/security/advanced_security_menu.cpp.obj:
+	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/cpp_file/security/advanced_security_menu.cpp.obj
+.PHONY : cpp_file/security/advanced_security_menu.cpp.obj
+
+cpp_file/security/advanced_security_menu.i: cpp_file/security/advanced_security_menu.cpp.i
+
+.PHONY : cpp_file/security/advanced_security_menu.i
+
+# target to preprocess a source file
+cpp_file/security/advanced_security_menu.cpp.i:
+	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/cpp_file/security/advanced_security_menu.cpp.i
+.PHONY : cpp_file/security/advanced_security_menu.cpp.i
+
+cpp_file/security/advanced_security_menu.s: cpp_file/security/advanced_security_menu.cpp.s
+
+.PHONY : cpp_file/security/advanced_security_menu.s
+
+# target to generate assembly for a file
+cpp_file/security/advanced_security_menu.cpp.s:
+	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/cpp_file/security/advanced_security_menu.cpp.s
+.PHONY : cpp_file/security/advanced_security_menu.cpp.s
+
+cpp_file/security/file_hash_verifier.obj: cpp_file/security/file_hash_verifier.cpp.obj
+
+.PHONY : cpp_file/security/file_hash_verifier.obj
+
+# target to build an object file
+cpp_file/security/file_hash_verifier.cpp.obj:
+	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/cpp_file/security/file_hash_verifier.cpp.obj
+.PHONY : cpp_file/security/file_hash_verifier.cpp.obj
+
+cpp_file/security/file_hash_verifier.i: cpp_file/security/file_hash_verifier.cpp.i
+
+.PHONY : cpp_file/security/file_hash_verifier.i
+
+# target to preprocess a source file
+cpp_file/security/file_hash_verifier.cpp.i:
+	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/cpp_file/security/file_hash_verifier.cpp.i
+.PHONY : cpp_file/security/file_hash_verifier.cpp.i
+
+cpp_file/security/file_hash_verifier.s: cpp_file/security/file_hash_verifier.cpp.s
+
+.PHONY : cpp_file/security/file_hash_verifier.s
+
+# target to generate assembly for a file
+cpp_file/security/file_hash_verifier.cpp.s:
+	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/cpp_file/security/file_hash_verifier.cpp.s
+.PHONY : cpp_file/security/file_hash_verifier.cpp.s
+
+cpp_file/security/log_viewer.obj: cpp_file/security/log_viewer.cpp.obj
+
+.PHONY : cpp_file/security/log_viewer.obj
+
+# target to build an object file
+cpp_file/security/log_viewer.cpp.obj:
+	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/cpp_file/security/log_viewer.cpp.obj
+.PHONY : cpp_file/security/log_viewer.cpp.obj
+
+cpp_file/security/log_viewer.i: cpp_file/security/log_viewer.cpp.i
+
+.PHONY : cpp_file/security/log_viewer.i
+
+# target to preprocess a source file
+cpp_file/security/log_viewer.cpp.i:
+	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/cpp_file/security/log_viewer.cpp.i
+.PHONY : cpp_file/security/log_viewer.cpp.i
+
+cpp_file/security/log_viewer.s: cpp_file/security/log_viewer.cpp.s
+
+.PHONY : cpp_file/security/log_viewer.s
+
+# target to generate assembly for a file
+cpp_file/security/log_viewer.cpp.s:
+	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/cpp_file/security/log_viewer.cpp.s
+.PHONY : cpp_file/security/log_viewer.cpp.s
+
 cpp_file/startup/SHOW_ALL_STARTUP.obj: cpp_file/startup/SHOW_ALL_STARTUP.cpp.obj
 
 .PHONY : cpp_file/startup/SHOW_ALL_STARTUP.obj
@@ -229,6 +310,33 @@ cpp_file/startup/startup.s: cpp_file/startup/startup.cpp.s
 cpp_file/startup/startup.cpp.s:
 	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/cpp_file/startup/startup.cpp.s
 .PHONY : cpp_file/startup/startup.cpp.s
+
+cpp_file/terminal/speed_test.obj: cpp_file/terminal/speed_test.cpp.obj
+
+.PHONY : cpp_file/terminal/speed_test.obj
+
+# target to build an object file
+cpp_file/terminal/speed_test.cpp.obj:
+	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/cpp_file/terminal/speed_test.cpp.obj
+.PHONY : cpp_file/terminal/speed_test.cpp.obj
+
+cpp_file/terminal/speed_test.i: cpp_file/terminal/speed_test.cpp.i
+
+.PHONY : cpp_file/terminal/speed_test.i
+
+# target to preprocess a source file
+cpp_file/terminal/speed_test.cpp.i:
+	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/cpp_file/terminal/speed_test.cpp.i
+.PHONY : cpp_file/terminal/speed_test.cpp.i
+
+cpp_file/terminal/speed_test.s: cpp_file/terminal/speed_test.cpp.s
+
+.PHONY : cpp_file/terminal/speed_test.s
+
+# target to generate assembly for a file
+cpp_file/terminal/speed_test.cpp.s:
+	$(MAKE) -f CMakeFiles\7SCW.dir\build.make CMakeFiles/7SCW.dir/cpp_file/terminal/speed_test.cpp.s
+.PHONY : cpp_file/terminal/speed_test.cpp.s
 
 cpp_file/terminal/terminal.obj: cpp_file/terminal/terminal.cpp.obj
 
@@ -323,6 +431,15 @@ help:
 	@echo ... cpp_file/file_manager/file_manager.obj
 	@echo ... cpp_file/file_manager/file_manager.i
 	@echo ... cpp_file/file_manager/file_manager.s
+	@echo ... cpp_file/security/advanced_security_menu.obj
+	@echo ... cpp_file/security/advanced_security_menu.i
+	@echo ... cpp_file/security/advanced_security_menu.s
+	@echo ... cpp_file/security/file_hash_verifier.obj
+	@echo ... cpp_file/security/file_hash_verifier.i
+	@echo ... cpp_file/security/file_hash_verifier.s
+	@echo ... cpp_file/security/log_viewer.obj
+	@echo ... cpp_file/security/log_viewer.i
+	@echo ... cpp_file/security/log_viewer.s
 	@echo ... cpp_file/startup/SHOW_ALL_STARTUP.obj
 	@echo ... cpp_file/startup/SHOW_ALL_STARTUP.i
 	@echo ... cpp_file/startup/SHOW_ALL_STARTUP.s
@@ -332,6 +449,9 @@ help:
 	@echo ... cpp_file/startup/startup.obj
 	@echo ... cpp_file/startup/startup.i
 	@echo ... cpp_file/startup/startup.s
+	@echo ... cpp_file/terminal/speed_test.obj
+	@echo ... cpp_file/terminal/speed_test.i
+	@echo ... cpp_file/terminal/speed_test.s
 	@echo ... cpp_file/terminal/terminal.obj
 	@echo ... cpp_file/terminal/terminal.i
 	@echo ... cpp_file/terminal/terminal.s

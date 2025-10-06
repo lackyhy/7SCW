@@ -5,9 +5,13 @@ set(CMAKE_DEPENDS_LANGUAGES
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
   "C:/Users/User/Desktop/7SCW/cpp_file/file_manager/file_manager.cpp" "C:/Users/User/Desktop/7SCW/cmake-build-debug/CMakeFiles/7SCW.dir/cpp_file/file_manager/file_manager.cpp.obj"
+  "C:/Users/User/Desktop/7SCW/cpp_file/security/advanced_security_menu.cpp" "C:/Users/User/Desktop/7SCW/cmake-build-debug/CMakeFiles/7SCW.dir/cpp_file/security/advanced_security_menu.cpp.obj"
+  "C:/Users/User/Desktop/7SCW/cpp_file/security/file_hash_verifier.cpp" "C:/Users/User/Desktop/7SCW/cmake-build-debug/CMakeFiles/7SCW.dir/cpp_file/security/file_hash_verifier.cpp.obj"
+  "C:/Users/User/Desktop/7SCW/cpp_file/security/log_viewer.cpp" "C:/Users/User/Desktop/7SCW/cmake-build-debug/CMakeFiles/7SCW.dir/cpp_file/security/log_viewer.cpp.obj"
   "C:/Users/User/Desktop/7SCW/cpp_file/startup/SHOW_ALL_STARTUP.cpp" "C:/Users/User/Desktop/7SCW/cmake-build-debug/CMakeFiles/7SCW.dir/cpp_file/startup/SHOW_ALL_STARTUP.cpp.obj"
   "C:/Users/User/Desktop/7SCW/cpp_file/startup/restoreStartupSettings.cpp" "C:/Users/User/Desktop/7SCW/cmake-build-debug/CMakeFiles/7SCW.dir/cpp_file/startup/restoreStartupSettings.cpp.obj"
   "C:/Users/User/Desktop/7SCW/cpp_file/startup/startup.cpp" "C:/Users/User/Desktop/7SCW/cmake-build-debug/CMakeFiles/7SCW.dir/cpp_file/startup/startup.cpp.obj"
+  "C:/Users/User/Desktop/7SCW/cpp_file/terminal/speed_test.cpp" "C:/Users/User/Desktop/7SCW/cmake-build-debug/CMakeFiles/7SCW.dir/cpp_file/terminal/speed_test.cpp.obj"
   "C:/Users/User/Desktop/7SCW/cpp_file/terminal/terminal.cpp" "C:/Users/User/Desktop/7SCW/cmake-build-debug/CMakeFiles/7SCW.dir/cpp_file/terminal/terminal.cpp.obj"
   "C:/Users/User/Desktop/7SCW/cpp_file/terminal/terminal_commands.cpp" "C:/Users/User/Desktop/7SCW/cmake-build-debug/CMakeFiles/7SCW.dir/cpp_file/terminal/terminal_commands.cpp.obj"
   "C:/Users/User/Desktop/7SCW/main.cpp" "C:/Users/User/Desktop/7SCW/cmake-build-debug/CMakeFiles/7SCW.dir/main.cpp.obj"
