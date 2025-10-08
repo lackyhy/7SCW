@@ -1,0 +1,45 @@
+# cmake_minimum_required(VERSION <specify CMake version here>)
+cmake_minimum_required(VERSION 3.16)
+project(7SCW)
+
+set(CMAKE_CXX_STANDARD 20)
+
+set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
+
+add_executable(7SCW main.cpp
+        h_file/main.h
+
+        cpp_file/argv.cpp
+        h_file/argv.h
+
+        cpp_file/terminal/terminal_commands.cpp
+        h_file/terminal/terminal_commands.h
+
+        cpp_file/startup/SHOW_ALL_STARTUP.cpp
+        h_file/startup/SHOW_ALL_STARTUP.h
+
+        cpp_file/file_manager/file_manager.cpp
+        h_file/file_manager/file_manager.h
+
+        cpp_file/startup/restoreStartupSettings.cpp
+        h_file/startup/restoreStartupSettings.h
+
+        cpp_file/terminal/terminal.cpp
+        h_file/terminal/terminal.h
+
+        cpp_file/startup/startup.cpp
+        h_file/startup/startup.h
+
+        cpp_file/terminal/speed_test.cpp
+        h_file/terminal/speed_test.h
+
+        cpp_file/security/file_hash_verifier.cpp
+        h_file/security/file_hash_verifier.h
+
+        cpp_file/security/log_viewer.cpp
+        h_file/security/log_viewer.h
+
+        cpp_file/security/advanced_security_menu.cpp
+        h_file/security/advanced_security_menu.h
+
+        cpp_file/file/clear_temp_file.cpp h_file/file/clear_temp_file.h)

@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="7SCW"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="C:/Users/User/Desktop/7SCW/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="C:/MinGW/bin/mingw32-make.exe -f &quot;C:/Users/User/Desktop/7SCW/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="C:/MinGW/bin/mingw32-make.exe -f &quot;C:/Users/User/Desktop/7SCW/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="C:/MinGW/bin/mingw32-make.exe -f &quot;C:/Users/User/Desktop/7SCW/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="C:/MinGW/bin/mingw32-make.exe -f &quot;C:/Users/User/Desktop/7SCW/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="7SCW">
+				<Option output="C:/Users/User/Desktop/7SCW/cmake-build-debug/7SCW.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="C:/Users/User/Desktop/7SCW/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="c:\mingw\bin\../lib/gcc/mingw32/6.3.0/include/c++"/>
+					<Add directory="c:\mingw\bin\../lib/gcc/mingw32/6.3.0/include/c++/mingw32"/>
+					<Add directory="c:\mingw\bin\../lib/gcc/mingw32/6.3.0/include/c++/backward"/>
+					<Add directory="c:\mingw\bin\../lib/gcc/mingw32/6.3.0/include"/>
+					<Add directory="c:\mingw\bin\../lib/gcc/mingw32/6.3.0/../../../../include"/>
+					<Add directory="c:\mingw\bin\../lib/gcc/mingw32/6.3.0/include-fixed"/>
+					<Add directory="c:\mingw\bin\../lib/gcc/mingw32/6.3.0/../../../../mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="C:/MinGW/bin/mingw32-make.exe -f &quot;C:/Users/User/Desktop/7SCW/cmake-build-debug/Makefile&quot;  VERBOSE=1 7SCW"/>
+					<CompileFile command="C:/MinGW/bin/mingw32-make.exe -f &quot;C:/Users/User/Desktop/7SCW/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="C:/MinGW/bin/mingw32-make.exe -f &quot;C:/Users/User/Desktop/7SCW/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="C:/MinGW/bin/mingw32-make.exe -f &quot;C:/Users/User/Desktop/7SCW/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="7SCW/fast">
+				<Option output="C:/Users/User/Desktop/7SCW/cmake-build-debug/7SCW.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="C:/Users/User/Desktop/7SCW/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="c:\mingw\bin\../lib/gcc/mingw32/6.3.0/include/c++"/>
+					<Add directory="c:\mingw\bin\../lib/gcc/mingw32/6.3.0/include/c++/mingw32"/>
+					<Add directory="c:\mingw\bin\../lib/gcc/mingw32/6.3.0/include/c++/backward"/>
+					<Add directory="c:\mingw\bin\../lib/gcc/mingw32/6.3.0/include"/>
+					<Add directory="c:\mingw\bin\../lib/gcc/mingw32/6.3.0/../../../../include"/>
+					<Add directory="c:\mingw\bin\../lib/gcc/mingw32/6.3.0/include-fixed"/>
+					<Add directory="c:\mingw\bin\../lib/gcc/mingw32/6.3.0/../../../../mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="C:/MinGW/bin/mingw32-make.exe -f &quot;C:/Users/User/Desktop/7SCW/cmake-build-debug/Makefile&quot;  VERBOSE=1 7SCW/fast"/>
+					<CompileFile command="C:/MinGW/bin/mingw32-make.exe -f &quot;C:/Users/User/Desktop/7SCW/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="C:/MinGW/bin/mingw32-make.exe -f &quot;C:/Users/User/Desktop/7SCW/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="C:/MinGW/bin/mingw32-make.exe -f &quot;C:/Users/User/Desktop/7SCW/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="C:/Users/User/Desktop/7SCW/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="C:/MinGW/bin/mingw32-make.exe -f &quot;C:/Users/User/Desktop/7SCW/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="C:/MinGW/bin/mingw32-make.exe -f &quot;C:/Users/User/Desktop/7SCW/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="C:/MinGW/bin/mingw32-make.exe -f &quot;C:/Users/User/Desktop/7SCW/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="C:/MinGW/bin/mingw32-make.exe -f &quot;C:/Users/User/Desktop/7SCW/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="C:/Users/User/Desktop/7SCW/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="C:/MinGW/bin/mingw32-make.exe -f &quot;C:/Users/User/Desktop/7SCW/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="C:/MinGW/bin/mingw32-make.exe -f &quot;C:/Users/User/Desktop/7SCW/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="C:/MinGW/bin/mingw32-make.exe -f &quot;C:/Users/User/Desktop/7SCW/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="C:/MinGW/bin/mingw32-make.exe -f &quot;C:/Users/User/Desktop/7SCW/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="C:/Users/User/Desktop/7SCW/cpp_file/argv.cpp">
+			<Option target="7SCW"/>
+		</Unit>
+		<Unit filename="C:/Users/User/Desktop/7SCW/cpp_file/file/clear_temp_file.cpp">
+			<Option target="7SCW"/>
+		</Unit>
+		<Unit filename="C:/Users/User/Desktop/7SCW/cpp_file/file_manager/file_manager.cpp">
+			<Option target="7SCW"/>
+		</Unit>
+		<Unit filename="C:/Users/User/Desktop/7SCW/cpp_file/security/advanced_security_menu.cpp">
+			<Option target="7SCW"/>
+		</Unit>
+		<Unit filename="C:/Users/User/Desktop/7SCW/cpp_file/security/file_hash_verifier.cpp">
+			<Option target="7SCW"/>
+		</Unit>
+		<Unit filename="C:/Users/User/Desktop/7SCW/cpp_file/security/log_viewer.cpp">
+			<Option target="7SCW"/>
+		</Unit>
+		<Unit filename="C:/Users/User/Desktop/7SCW/cpp_file/startup/SHOW_ALL_STARTUP.cpp">
+			<Option target="7SCW"/>
+		</Unit>
+		<Unit filename="C:/Users/User/Desktop/7SCW/cpp_file/startup/restoreStartupSettings.cpp">
+			<Option target="7SCW"/>
+		</Unit>
+		<Unit filename="C:/Users/User/Desktop/7SCW/cpp_file/startup/startup.cpp">
+			<Option target="7SCW"/>
+		</Unit>
+		<Unit filename="C:/Users/User/Desktop/7SCW/cpp_file/terminal/speed_test.cpp">
+			<Option target="7SCW"/>
+		</Unit>
+		<Unit filename="C:/Users/User/Desktop/7SCW/cpp_file/terminal/terminal.cpp">
+			<Option target="7SCW"/>
+		</Unit>
+		<Unit filename="C:/Users/User/Desktop/7SCW/cpp_file/terminal/terminal_commands.cpp">
+			<Option target="7SCW"/>
+		</Unit>
+		<Unit filename="C:/Users/User/Desktop/7SCW/h_file/argv.h">
+			<Option target="7SCW"/>
+		</Unit>
+		<Unit filename="C:/Users/User/Desktop/7SCW/h_file/file/clear_temp_file.h">
+			<Option target="7SCW"/>
+		</Unit>
+		<Unit filename="C:/Users/User/Desktop/7SCW/h_file/file_manager/file_manager.h">
+			<Option target="7SCW"/>
+		</Unit>
+		<Unit filename="C:/Users/User/Desktop/7SCW/h_file/main.h">
+			<Option target="7SCW"/>
+		</Unit>
+		<Unit filename="C:/Users/User/Desktop/7SCW/h_file/security/advanced_security_menu.h">
+			<Option target="7SCW"/>
+		</Unit>
+		<Unit filename="C:/Users/User/Desktop/7SCW/h_file/security/file_hash_verifier.h">
+			<Option target="7SCW"/>
+		</Unit>
+		<Unit filename="C:/Users/User/Desktop/7SCW/h_file/security/log_viewer.h">
+			<Option target="7SCW"/>
+		</Unit>
+		<Unit filename="C:/Users/User/Desktop/7SCW/h_file/startup/SHOW_ALL_STARTUP.h">
+			<Option target="7SCW"/>
+		</Unit>
+		<Unit filename="C:/Users/User/Desktop/7SCW/h_file/startup/restoreStartupSettings.h">
+			<Option target="7SCW"/>
+		</Unit>
+		<Unit filename="C:/Users/User/Desktop/7SCW/h_file/startup/startup.h">
+			<Option target="7SCW"/>
+		</Unit>
+		<Unit filename="C:/Users/User/Desktop/7SCW/h_file/terminal/speed_test.h">
+			<Option target="7SCW"/>
+		</Unit>
+		<Unit filename="C:/Users/User/Desktop/7SCW/h_file/terminal/terminal.h">
+			<Option target="7SCW"/>
+		</Unit>
+		<Unit filename="C:/Users/User/Desktop/7SCW/h_file/terminal/terminal_commands.h">
+			<Option target="7SCW"/>
+		</Unit>
+		<Unit filename="C:/Users/User/Desktop/7SCW/main.cpp">
+			<Option target="7SCW"/>
+		</Unit>
+		<Unit filename="C:/Users/User/Desktop/7SCW/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>
