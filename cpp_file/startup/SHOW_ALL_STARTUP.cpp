@@ -767,7 +767,7 @@ public:
         cout << "    SHOW ALL STARTUP" << endl;
         cout << "========================================" << endl << endl;
 
-        // Folder startup
+        // Folder startup (остается без изменений)
         cout << "Current User Startup Folder:" << endl;
         cout << "-----------------------------" << endl;
         char appDataPath[MAX_PATH];
@@ -799,7 +799,7 @@ public:
 
         cout << endl;
 
-        // All Users Startup Folder
+        // All Users Startup Folder (остается без изменений)
         cout << "All Users Startup Folder:" << endl;
         cout << "-------------------------" << endl;
         char programDataPath[MAX_PATH];
@@ -829,24 +829,6 @@ public:
             }
         }
 
-
-        // Check HKCU Run
-        system("reg query \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\" 2>nul");
-        cout << endl;
-
-        // Check HKCU RunOnce
-        system("reg query \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce\" 2>nul");
-        cout << endl;
-
-        // Check HKLM Run
-        system("reg query \"HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\" 2>nul");
-        cout << endl;
-
-        // Check HKLM RunOnce
-        system("reg query \"HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce\" 2>nul");
-        cout << endl;
-
-
         auto showRegistryValues = [](const string& regPath, const string& description = "") {
             cout << "• " << regPath;
             if (!description.empty()) {
@@ -854,17 +836,28 @@ public:
             }
             cout << endl;
 
-            // Создаем временный файл для вывода reg query
-            string tempFile = "temp_reg_output.txt";
-            string command = "reg query \"" + regPath + "\" 2>nul > " + tempFile;
-            system(command.c_str());
+            string command = "reg query \"" + regPath + "\" 2>nul";
 
-            // Читаем и выводим содержимое
-            ifstream file(tempFile);
-            string line;
+            FILE* pipe = _popen(command.c_str(), "r");
+            if (!pipe) {
+                cout << "\t\t(Error executing command)" << endl << endl;
+                return;
+            }
+
+            char buffer[128];
+            string result = "";
             bool hasContent = false;
 
-            while (getline(file, line)) {
+            while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+                result += buffer;
+            }
+
+            int returnCode = _pclose(pipe);
+
+            stringstream ss(result);
+            string line;
+
+            while (getline(ss, line)) {
                 if (!line.empty() && line.find(regPath) == string::npos) {
                     if (!hasContent) {
                         cout << "\t\tCurrent values:" << endl;
@@ -873,16 +866,13 @@ public:
                     cout << "\t\t  " << line << endl;
                 }
             }
-            file.close();
-
-            // Удаляем временный файл
-            remove(tempFile.c_str());
 
             if (!hasContent) {
                 cout << "\t\t(No values found)" << endl;
             }
             cout << endl;
         };
+
         auto showRegistryKeyValues = [](const string& regPath, const string& valueName = "") {
             cout << "• " << regPath;
             if (!valueName.empty()) {
@@ -890,20 +880,33 @@ public:
             }
             cout << endl;
 
-            string tempFile = "temp_reg_output.txt";
             string command;
             if (valueName.empty()) {
-                command = "reg query \"" + regPath + "\" 2>nul > " + tempFile;
+                command = "reg query \"" + regPath + "\" 2>nul";
             } else {
-                command = "reg query \"" + regPath + "\" /v \"" + valueName + "\" 2>nul > " + tempFile;
+                command = "reg query \"" + regPath + "\" /v \"" + valueName + "\" 2>nul";
             }
-            system(command.c_str());
 
-            ifstream file(tempFile);
-            string line;
+            FILE* pipe = _popen(command.c_str(), "r");
+            if (!pipe) {
+                cout << "\t\t(Error executing command)" << endl << endl;
+                return;
+            }
+
+            char buffer[128];
+            string result = "";
             bool hasContent = false;
 
-            while (getline(file, line)) {
+            while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+                result += buffer;
+            }
+
+            int returnCode = _pclose(pipe);
+
+            stringstream ss(result);
+            string line;
+
+            while (getline(ss, line)) {
                 if (!line.empty() && line.find(regPath) == string::npos) {
                     if (!hasContent) {
                         cout << "\t\tCurrent value: ";
@@ -912,12 +915,45 @@ public:
                     cout << line << endl;
                 }
             }
-            file.close();
-
-            remove(tempFile.c_str());
 
             if (!hasContent) {
                 cout << "\t\t(Value not set)" << endl;
+            }
+            cout << endl;
+        };
+
+        // Функция для отображения задач планировщика без временных файлов
+        auto showScheduledTasks = [](const string& searchPattern, const string& description) {
+            cout << "• All tasks containing '" << searchPattern << "' in name" << endl;
+
+            string command = "schtasks /query /fo list | findstr /i \"" + searchPattern + "\" 2>nul";
+
+            FILE* pipe = _popen(command.c_str(), "r");
+            if (!pipe) {
+                cout << "\t\t(Error executing command)" << endl << endl;
+                return;
+            }
+
+            char buffer[128];
+            bool hasTasks = false;
+
+            cout << "\t\tCurrent tasks:" << endl;
+            while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+                string taskLine = buffer;
+                // Убираем символ новой строки
+                if (!taskLine.empty() && taskLine.back() == '\n') {
+                    taskLine.pop_back();
+                }
+                if (!taskLine.empty()) {
+                    cout << "\t\t  " << taskLine << endl;
+                    hasTasks = true;
+                }
+            }
+
+            _pclose(pipe);
+
+            if (!hasTasks) {
+                cout << "\t\t  (No " << description << " tasks found)" << endl;
             }
             cout << endl;
         };
@@ -953,61 +989,11 @@ public:
 
         cout << "TASK SCHEDULER TASKS:" << endl;
         cout << "---------------------" << endl;
-        cout << "• All tasks containing 'startup' in name" << endl;
-        // Показ задач планировщика
-        system("schtasks /query /fo list | findstr /i \"startup\" > temp_tasks.txt 2>nul");
-        ifstream taskFile("temp_tasks.txt");
-        string taskLine;
-        bool hasTasks = false;
-        cout << "\t\tCurrent tasks:" << endl;
-        while (getline(taskFile, taskLine)) {
-            if (!taskLine.empty()) {
-                cout << "\t\t  " << taskLine << endl;
-                hasTasks = true;
-            }
-        }
-        taskFile.close();
-        remove("temp_tasks.txt");
-        if (!hasTasks) {
-            cout << "\t\t  (No startup tasks found)" << endl;
-        }
-        cout << endl;
 
-        cout << "• All tasks containing 'logon' in name" << endl;
-        system("schtasks /query /fo list | findstr /i \"logon\" > temp_tasks.txt 2>nul");
-        taskFile.open("temp_tasks.txt");
-        hasTasks = false;
-        cout << "\t\tCurrent tasks:" << endl;
-        while (getline(taskFile, taskLine)) {
-            if (!taskLine.empty()) {
-                cout << "\t\t  " << taskLine << endl;
-                hasTasks = true;
-            }
-        }
-        taskFile.close();
-        remove("temp_tasks.txt");
-        if (!hasTasks) {
-            cout << "\t\t  (No logon tasks found)" << endl;
-        }
-        cout << endl;
-
-        cout << "• All tasks containing 'boot' in name" << endl;
-        system("schtasks /query /fo list | findstr /i \"boot\" > temp_tasks.txt 2>nul");
-        taskFile.open("temp_tasks.txt");
-        hasTasks = false;
-        cout << "\t\tCurrent tasks:" << endl;
-        while (getline(taskFile, taskLine)) {
-            if (!taskLine.empty()) {
-                cout << "\t\t  " << taskLine << endl;
-                hasTasks = true;
-            }
-        }
-        taskFile.close();
-        remove("temp_tasks.txt");
-        if (!hasTasks) {
-            cout << "\t\t  (No boot tasks found)" << endl;
-        }
-        cout << endl;
+        // Используем новую функцию для задач планировщика
+        showScheduledTasks("startup", "startup");
+        showScheduledTasks("logon", "logon");
+        showScheduledTasks("boot", "boot");
 
         cout << "DEFAULT VALUES WILL BE RESTORED:" << endl;
         cout << "--------------------------------" << endl;
@@ -1015,8 +1001,6 @@ public:
         showRegistryKeyValues("HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon", "Userinit");
 
         cout << "==================================================================" << endl << endl;
-
-
 
         cout << endl << "Press any key to continue...";
         _getch();

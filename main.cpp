@@ -37,7 +37,6 @@ BOOL WINAPI CtrlHandler(DWORD fdwCtrlType) {
 void showStartupLocationsMenu();
 
 
-// Function to hide cursor
 void hideCursor() {
     CONSOLE_CURSOR_INFO cursorInfo;
     GetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursorInfo);
@@ -45,7 +44,6 @@ void hideCursor() {
     SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursorInfo);
 }
 
-// Function to show cursor
 void showCursor() {
     CONSOLE_CURSOR_INFO cursorInfo;
     GetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursorInfo);
@@ -120,7 +118,6 @@ void showHelp() {
     _getch();
 }
 
-// Function to draw menu
 void drawMenu(const vector<string>& menuItems, int selectedIndex) {
     system("cls");
 
@@ -152,7 +149,6 @@ void drawMenu(const vector<string>& menuItems, int selectedIndex) {
         cout << "-";
     }
 }
-
 
 void showStartupLocationsMenu() {
     vector<string> options = {
@@ -235,24 +231,16 @@ void showStartupLocationsMenu() {
 }
 
 void main_menu(bool safemod, bool isAdmin) {
-    BOOL safemode = safemod;
-
-    BOOL clear_tempfile = FALSE;
-    BOOL clear_autorun = FALSE;
-
     if ( safemod ) {
         stringstream title;
         title << "Menu System [SAFE MODE], SafeMode: " << (safemode ? "true" : "false") << ", isAdmin: " << (isAdmin ? "true" : "false");
         SetConsoleTitleA(title.str().c_str());
-        // В safemode работаем в текущем терминале без создания нового окна
         vector <string> menuItems = {
                 "File Manager",
                 "Check Startup",
                 "Users\n",
                 "Clear TEMP Files",
                 "System Info\n",
-                "Log Viewer & Security",
-                "File Hash Verification\n",
                 "CMD",
                 "POWERSHELL\n",
                 "Help",
@@ -460,7 +448,7 @@ void main_menu(bool safemod, bool isAdmin) {
         showCursor();
         return;
     }
-};
+}
 
 
 int main(int argc, char *argv[]) {
@@ -476,9 +464,7 @@ int main(int argc, char *argv[]) {
     }
 
     process_command_line_args(argc, argv);
-
     process_argc();
-
 
     // start menu
     main_menu(safemode, isAdmin);

@@ -47,7 +47,7 @@ void customTerminal() {
         transform(cmd.begin(), cmd.end(), cmd.begin(), ::tolower);
 
         // Handle built-in commands
-        if (cmd == "exit" || cmd == "quit") {
+        if (cmd == "exit" || cmd == "quit" || cmd == "q") {
             break;
         }
         else if (cmd == "help") {

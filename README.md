@@ -1,6 +1,6 @@
 # 🖥️ Advanced System Management Tool - 7SCW
 
-**Version:** 9.5.0 | **Created by:** LCKY | **GitHub:** https://github.com/lackyhy/7SCW
+**Version:** 9.6.0 | **Created by:** LCKY | **GitHub:** https://github.com/lackyhy/7SCW
 
 
 A powerful Windows console application that provides comprehensive system management capabilities, advanced file operations, startup management, and a custom bash-like terminal with encryption, hash generation, and network testing features.
