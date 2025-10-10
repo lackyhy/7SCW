@@ -30,5 +30,8 @@ bool downloadUpdate(const string& url);
 void installUpdate();
 string getLatestVersionFromGitHub();
 bool isUpdateAvailable();
+extern bool updateCheckDone;
+extern bool updateAvailable;
+void checkForUpdatesOnce();
 
 #endif
