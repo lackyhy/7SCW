@@ -17,7 +17,11 @@ bool updateAvailable = false;
 
 // Function to check for updates once at startup
 void checkForUpdatesOnce() {
-    updateAvailable = true;
+    if (!updateCheckDone) {
+        string latestVersion = getLatestVersionFromGitHub();
+        updateAvailable = (!latestVersion.empty() && compareVersions(VERSION, latestVersion));
+        updateCheckDone = true;
+    }
 }
 
 // Random generator initialization
