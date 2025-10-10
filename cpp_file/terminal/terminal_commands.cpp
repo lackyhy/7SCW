@@ -19,7 +19,15 @@ bool updateAvailable = false;
 void checkForUpdatesOnce() {
     if (!updateCheckDone) {
         string latestVersion = getLatestVersionFromGitHub();
-        updateAvailable = (!latestVersion.empty() && compareVersions(VERSION, latestVersion));
+        
+        string currentVersionUpper = VERSION;
+        transform(currentVersionUpper.begin(), currentVersionUpper.end(), currentVersionUpper.begin(), ::toupper);
+        
+        if (currentVersionUpper.find("DEV") != string::npos) {
+            updateAvailable = false;
+        } else {
+            updateAvailable = (!latestVersion.empty() && compareVersions(VERSION, latestVersion));
+        }
         updateCheckDone = true;
     }
 }
