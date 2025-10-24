@@ -1,0 +1,3 @@
+C:/Users/User/Desktop/asd/build/CMakeFiles/7SCW.dir
+C:/Users/User/Desktop/asd/build/CMakeFiles/edit_cache.dir
+C:/Users/User/Desktop/asd/build/CMakeFiles/rebuild_cache.dir

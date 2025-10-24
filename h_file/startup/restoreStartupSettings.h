@@ -1,0 +1,11 @@
+//
+// Created by User on 29.09.2025.
+//
+
+#ifndef INC_7SCW_RESTORESTARTUPSETTINGS_H
+#define INC_7SCW_RESTORESTARTUPSETTINGS_H
+
+
+void restoreStartupSettings();
+
+#endif //INC_7SCW_RESTORESTARTUPSETTINGS_H
