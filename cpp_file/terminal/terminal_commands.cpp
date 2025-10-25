@@ -1,6 +1,3 @@
-#include "../../h_file/terminal/terminal_commands.h"
-#include "../../h_file/terminal/speed_test.h"
-#include "../../h_file/main.h"
 #include <random>
 #include <chrono>
 #include <ctime>
@@ -10,6 +7,11 @@
 #include <algorithm>
 #include <fstream>
 #include <iomanip>
+
+#include "../../h_file/terminal/terminal_commands.h"
+#include "../../h_file/terminal/speed_test.h"
+#include "../../h_file/main.h"
+#include "../../h_file/logs/logs.h"
 
 // Global variables for update checking
 bool updateCheckDone = false;
@@ -96,10 +98,20 @@ void createHash(const vector<string> &args) {
             showHashHelp();
             return;
         } else if (args[i] == "-l" && i + 1 < args.size()) {
-            length = stoi(args[i + 1]);
+            try {
+                length = stoi(args[i + 1]);
+            } catch (const std::invalid_argument& e) {
+                cout << "Error: Invalid length value. Using default length of 32." << endl;
+                length = 32;
+            }
             i++;
         } else if (args[i] == "-q" && i + 1 < args.size()) {
-            quantity = stoi(args[i + 1]);
+            try {
+                quantity = stoi(args[i + 1]);
+            } catch (const std::invalid_argument& e) {
+                cout << "Error: Invalid quantity value. Using default quantity of 1." << endl;
+                quantity = 1;
+            }
             i++;
         } else if (args[i] == "-f" && i + 1 < args.size()) {
             filename = args[i + 1];
@@ -664,18 +676,64 @@ bool compareVersions(const string& currentVersion, const string& latestVersion) 
     // Simple version comparison (assumes format like "9.6.0")
     vector<int> currentParts, latestParts;
     
+    // Debug input
+    // cout << "Debug: compareVersions called with currentVersion='" << currentVersion << "' latestVersion='" << latestVersion << "'" << endl;
+    
+    // Remove "release_" prefix if present from both versions
+    string cleanCurrentVersion = currentVersion;
+    string cleanLatestVersion = latestVersion;
+    
+    if (cleanCurrentVersion.find("release_") == 0) {
+        cleanCurrentVersion = cleanCurrentVersion.substr(8);
+    }
+    if (cleanLatestVersion.find("release_") == 0) {
+        cleanLatestVersion = cleanLatestVersion.substr(8);
+    }
+    
+    // Check if versions are empty
+    if (cleanCurrentVersion.empty() || cleanLatestVersion.empty()) {
+        cout << "Debug: One of the versions is empty" << endl;
+        return false;
+    }
+    
     // Parse current version
-    stringstream currentSS(currentVersion);
+    stringstream currentSS(cleanCurrentVersion);
     string part;
     while (getline(currentSS, part, '.')) {
-        currentParts.push_back(stoi(part));
+        if (part.empty()) continue; // Skip empty parts
+        try {
+            currentParts.push_back(stoi(part));
+        } catch (const std::invalid_argument& e) {
+            Logger::error("Invalid current version format: " + part);
+            Logger::error(string("Error: ") + e.what());
+            return false; // Invalid version format
+        }
     }
     
     // Parse latest version
-    stringstream latestSS(latestVersion);
+    stringstream latestSS(cleanLatestVersion);
     while (getline(latestSS, part, '.')) {
-        latestParts.push_back(stoi(part));
+        if (part.empty()) continue; // Skip empty parts
+        try {
+            latestParts.push_back(stoi(part));
+        } catch (const std::invalid_argument& e) {
+            Logger::error("Invalid version format: " + part);
+            Logger::error(string("Error: ") + e.what());
+            return false; // Invalid version format
+        }
     }
+    
+    // Debug output
+    // cout << "Debug: Current version parts: ";
+    // for (int part : currentParts) {
+    //     cout << part << " ";
+    // }
+    // cout << endl;
+    // cout << "Debug: Latest version parts: ";
+    // for (int part : latestParts) {
+    //     cout << part << " ";
+    // }
+    // cout << endl;
     
     // Compare versions
     size_t maxSize = max(currentParts.size(), latestParts.size());
@@ -977,6 +1035,8 @@ void updateProgram() {
     cout << endl;
     
     // Current version (from main.h or define here)
+    cout << "Debug: VERSION string = '" << VERSION << "'" << endl;
+    cout << "Debug: VERSION length = " << VERSION.length() << endl;
     cout << "Current version: " << VERSION << endl;
     cout << endl;
     
@@ -1064,6 +1124,11 @@ string getLatestVersionFromGitHub() {
         size_t versionStart = jsonContent.find("\"", versionPos + 10) + 1;
         size_t versionEnd = jsonContent.find("\"", versionStart);
         latestVersion = jsonContent.substr(versionStart, versionEnd - versionStart);
+        
+        // Remove "release_" prefix if present
+        if (latestVersion.find("release_") == 0) {
+            latestVersion = latestVersion.substr(8); // Remove "release_" (8 characters)
+        }
     }
     
     // Clean up temp file

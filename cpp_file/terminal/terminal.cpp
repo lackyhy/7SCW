@@ -12,6 +12,7 @@
 #include "../../h_file/file_manager/file_manager.h"
 #include "../../h_file/file/clear_cookie.h"
 #include "../../h_file/logs/logs.h"
+#include "../../h_file/main.h"
 
 using namespace std;
 
@@ -179,9 +180,39 @@ void customTerminal() {
             cout << "  create_hash      - Generate random hashes with flags: -l, -q, -s, -f, -h" << endl;
             cout << "  network          - Network management and testing menu" << endl;
             cout << "  update_programm  - Check and update program from GitHub" << endl;
+            cout << "  info             - Show program information and GitHub link" << endl;
             cout << "  help             - Show this help" << endl;
             cout << "  exit, quit       - Exit terminal" << endl;
             cout << "  Any other command will be executed as Windows command" << endl << endl;
+        }
+        else if (cmd == "info") {
+            system("cls");
+            cout << "=========================================" << endl;
+            cout << "            PROGRAM INFORMATION" << endl;
+            cout << "=========================================" << endl;
+            cout << endl;
+            cout << "Program Name: 7SCW (7 System Control Windows) - version " << VERSION << endl;
+            cout << "Author: lackyhy (LCKY)" << endl;
+            cout << endl;
+            cout << "GitHub Repository:" << endl;
+            cout << "https://github.com/lackyhy/7SCW" << endl;
+            cout << endl;
+            cout << "Description:" << endl;
+            cout << "A comprehensive system management tool for Windows" << endl;
+            cout << "providing file management, system information," << endl;
+            cout << "startup management, security tools, and more." << endl;
+            cout << endl;
+            cout << "Features:" << endl;
+            cout << "- File Manager with advanced navigation" << endl;
+            cout << "- Startup locations management" << endl;
+            cout << "- System information display" << endl;
+            cout << "- Security tools and log viewing" << endl;
+            cout << "- Custom terminal with bash-like commands" << endl;
+            cout << "- Automatic updates from GitHub" << endl;
+            cout << endl;
+            cout << "Press any key to continue...";
+            _getch();
+            system("cls");
         }
         else if (cmd == "clear" || cmd == "cls") {
             system("cls");
