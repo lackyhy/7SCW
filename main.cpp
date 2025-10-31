@@ -9,18 +9,18 @@
 #include <windows.h>
 #include <conio.h>
 
-#include "h_file/startup/restoreStartupSettings.h"
-#include "h_file/startup/startup.h"
-#include "h_file/terminal/terminal.h"
-#include "h_file/file_manager/file_manager.h"
-#include "h_file/startup/SHOW_ALL_STARTUP.h"
-#include "h_file/security/advanced_security_menu.h"
-#include "h_file/main.h"
-#include "h_file/argv.h"
-#include "h_file/file/clear_temp_file.h"
-#include "h_file/terminal/terminal_commands.h"
-#include "h_file/system_info/system_info.h"
-#include "h_file/logs/logs.h"
+#include "include/h_file/startup/restoreStartupSettings.h"
+#include "include/h_file/startup/startup.h"
+#include "include/h_file/terminal/terminal.h"
+#include "include/h_file/file_manager/file_manager.h"
+#include "include/h_file/startup/SHOW_ALL_STARTUP.h"
+#include "include/h_file/security/advanced_security_menu.h"
+#include "include/h_file/main.h"
+#include "include/h_file/argv.h"
+#include "include/h_file/file/clear_temp_file.h"
+#include "include/h_file/terminal/terminal_commands.h"
+#include "include/h_file/system_info/system_info.h"
+#include "include/Logger.h"
 
 using namespace std;
 
@@ -117,6 +117,7 @@ void showHelp() {
     cout << "       -clear_autorun - clear Startup" << endl;
     cout << "       -safemod - run in safe mode (works in current terminal without admin rights)" << endl;
     cout << "       --logs - enable logging to logs.txt file" << endl;
+    cout << "       -logs_console - open separate console window for logs" << endl;
 
     _getch();
 }
@@ -474,6 +475,7 @@ void main_menu(bool safemod, bool isAdmin) {
 }
 
 int main(int argc, char *argv[]) {
+    Logger::info("Launch SID and request administrator rights");
     SID_IDENTIFIER_AUTHORITY NtAuthority = SECURITY_NT_AUTHORITY;
     PSID AdministratorsGroup;
     if (AllocateAndInitializeSid(&NtAuthority, 2,
@@ -488,10 +490,24 @@ int main(int argc, char *argv[]) {
     process_command_line_args(argc, argv);
     process_argc();
 
-    // Initialize logger if --logs flag is provided
-    Logger::initialize(logs_enabled);
+    // Initialize logger if --logs or -logs_console flag is provided
+    Logger::initialize(logs_enabled, logs_console);
+    
+    // Test logs if console logging is enabled
+    if (logs_console) {
+        Logger::info("Console logging test - this should appear in separate console");
+        Logger::success("Console logging is working!");
+    }
 
     // start menu
+    Logger::functions_log(LOG_INFO, "main", "starting");
+    Logger::info("starting MAIN MENU");
     main_menu(safemode, isAdmin);
+    Logger::success("success start main menu");
+    // Close log console if it was opened
+    if (logs_console) {
+        Logger::closeLogConsole();
+    }
+    
     return 0;
 }

@@ -7,58 +7,58 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
 
 add_executable(7SCW main.cpp
-        h_file/main.h
+        include/h_file/main.h
 
-        cpp_file/argv.cpp
-        h_file/argv.h
+        include/cpp_file/argv.cpp
+        include/h_file/argv.h
 
-        cpp_file/terminal/terminal_commands.cpp
-        h_file/terminal/terminal_commands.h
+        include/cpp_file/terminal/terminal_commands.cpp
+        include/h_file/terminal/terminal_commands.h
 
-        cpp_file/startup/SHOW_ALL_STARTUP.cpp
-        h_file/startup/SHOW_ALL_STARTUP.h
+        include/cpp_file/startup/SHOW_ALL_STARTUP.cpp
+        include/h_file/startup/SHOW_ALL_STARTUP.h
 
-        cpp_file/file_manager/file_manager.cpp
-        h_file/file_manager/file_manager.h
+        include/cpp_file/file_manager/file_manager.cpp
+        include/h_file/file_manager/file_manager.h
 
-        cpp_file/startup/restoreStartupSettings.cpp
-        h_file/startup/restoreStartupSettings.h
+        include/cpp_file/startup/restoreStartupSettings.cpp
+        include/h_file/startup/restoreStartupSettings.h
 
-        cpp_file/terminal/terminal.cpp
-        h_file/terminal/terminal.h
+        include/cpp_file/terminal/terminal.cpp
+        include/h_file/terminal/terminal.h
 
-        cpp_file/startup/startup.cpp
-        h_file/startup/startup.h
+        include/cpp_file/startup/startup.cpp
+        include/h_file/startup/startup.h
 
-        cpp_file/terminal/speed_test.cpp
-        h_file/terminal/speed_test.h
+        include/cpp_file/terminal/speed_test.cpp
+        include/h_file/terminal/speed_test.h
 
-        cpp_file/security/file_hash_verifier.cpp
-        h_file/security/file_hash_verifier.h
+        include/cpp_file/security/file_hash_verifier.cpp
+        include/h_file/security/file_hash_verifier.h
 
-        cpp_file/security/log_viewer.cpp
-        h_file/security/log_viewer.h
+        include/cpp_file/security/log_viewer.cpp
+        include/h_file/security/log_viewer.h
 
-        cpp_file/security/advanced_security_menu.cpp
-        h_file/security/advanced_security_menu.h
+        include/cpp_file/security/advanced_security_menu.cpp
+        include/h_file/security/advanced_security_menu.h
 
-        cpp_file/file/clear_temp_file.cpp 
-        h_file/file/clear_temp_file.h 
+        include/cpp_file/file/clear_temp_file.cpp 
+        include/h_file/file/clear_temp_file.h 
         
-        cpp_file/activator/menu.cpp 
-        h_file/activator/menu.h 
+        include/cpp_file/activator/menu.cpp 
+        include/h_file/activator/menu.h 
 
-        cpp_file/activator/load_script.cpp 
-        h_file/activator/load_script.h
+        include/cpp_file/activator/load_script.cpp 
+        include/h_file/activator/load_script.h
 
-        cpp_file/system_info/system_info.cpp
-        h_file/system_info/system_info.h
+        include/cpp_file/system_info/system_info.cpp
+        include/h_file/system_info/system_info.h
 
-        cpp_file/file/clear_cookie.cpp
-        h_file/file/clear_cookie.h
+        include/cpp_file/file/clear_cookie.cpp
+        include/h_file/file/clear_cookie.h
 
-        cpp_file/logs/logs.cpp
-        h_file/logs/logs.h
+        include/Logger.cpp
+        include/Logger.h
 )
 
 target_link_libraries(7SCW 
