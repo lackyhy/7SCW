@@ -1,6 +1,6 @@
 # 🖥️ 7 System Control Windows - 7SCW
 
-**Version:** 9.9.8_5 | **Created by:** LCKY | **GitHub:** https://github.com/lackyhy/7SCW
+**Version:** 10 | **Created by:** LCKY | **GitHub:** https://github.com/lackyhy/7SCW
 
 A powerful Windows console application that provides comprehensive system management capabilities, advanced file operations, startup management, security monitoring, and a custom bash-like terminal with encryption, hash generation, and network testing features.
 
