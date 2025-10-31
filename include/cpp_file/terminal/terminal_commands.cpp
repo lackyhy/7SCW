@@ -908,16 +908,17 @@ bool downloadUpdate(const string& url) {
         }
         
         urlsToTry = {
+            "https://github.com/lackyhy/7SCW/releases/latest/download/7SCW.exe",
             "https://github.com/lackyhy/7SCW/releases/download/" + latestVersion + "/7SCW.exe",
             "https://github.com/lackyhy/7SCW/releases/download/" + latestVersion + "/7SCW.zip",
-            "https://github.com/lackyhy/7SCW/archive/refs/tags/" + latestVersion + ".zip",
-            "https://github.com/lackyhy/7SCW/releases/latest/download/7SCW.exe"
+            "https://github.com/lackyhy/7SCW/archive/refs/tags/" + latestVersion + ".zip"
         };
         
         cout << "Debug: Using dynamic version: " << latestVersion << endl;
     }
     
-    string filename = ""; // Declare filename outside the loop
+    string filename = "";
+    bool downloadSuccess = false;
     
     for (size_t i = 0; i < urlsToTry.size(); ++i) {
         const string& currentUrl = urlsToTry[i];
@@ -933,34 +934,55 @@ bool downloadUpdate(const string& url) {
             filename += ".zip"; // Default to zip
         }
         
-        string command = "curl -L -o \"" + filename + "\" \"" + currentUrl + "\"";
+        // Remove existing file
+        remove(filename.c_str());
+        
+        string command = "curl -L -f -o \"" + filename + "\" \"" + currentUrl + "\"";
         cout << "Command: " << command << endl;
         
         int result = system(command.c_str());
         
         if (result == 0) {
-            cout << "Successfully downloaded from URL " << (i + 1) << "!" << endl;
-            break; // Success, exit the loop
+            // Verify file was actually downloaded and has content
+            ifstream testFile(filename, ios::binary | ios::ate);
+            if (testFile.is_open() && testFile.tellg() > 1024) { // File exists and has reasonable size
+                cout << "Successfully downloaded from URL " << (i + 1) << "!" << endl;
+                downloadSuccess = true;
+                break;
+            } else {
+                cout << "Downloaded file is empty or too small, trying next URL..." << endl;
+                remove(filename.c_str());
+            }
+            testFile.close();
         } else {
             cout << "Failed to download from URL " << (i + 1) << ". curl exit code: " << result << endl;
-            if (i == urlsToTry.size() - 1) {
-                cout << "Error: All download attempts failed." << endl;
-                return false;
-            }
+            remove(filename.c_str()); // Clean up failed download
         }
     }
     
-    // Check if file was downloaded
-    ifstream file(filename);
-    if (!file.is_open()) {
-        cout << "Error: Update file not found after download: " << filename << endl;
+    if (!downloadSuccess) {
+        cout << "Error: All download attempts failed." << endl;
+        return false;
+    }
+    
+    // Check if file was downloaded and has content
+    ifstream file(filename, ios::binary | ios::ate);
+    if (!file.is_open() || file.tellg() < 1024) {
+        cout << "Error: Update file not found or too small: " << filename << endl;
+        file.close();
         return false;
     }
     file.close();
     
+    cout << "Update file size: " << file.tellg() << " bytes" << endl;
+    
     // If it's a zip file, extract it
     if (filename.find(".zip") != string::npos) {
         cout << "Extracting ZIP file..." << endl;
+        
+        // Clean up previous extraction
+        system("rmdir /s /q update_temp 2>nul");
+        
         string extractCommand = "powershell -command \"Expand-Archive -Path '" + filename + "' -DestinationPath 'update_temp' -Force\"";
         int extractResult = system(extractCommand.c_str());
         
@@ -970,39 +992,75 @@ bool downloadUpdate(const string& url) {
         }
         
         // Look for the main executable in the extracted folder
-        string findExeCommand = "dir /s /b update_temp\\*.exe > __temp_exe_list.txt";
+        string findExeCommand = "dir /s /b update_temp\\*.exe 2>nul > __temp_exe_list.txt";
         system(findExeCommand.c_str());
         
         ifstream exeList("__temp_exe_list.txt");
+        string exePath;
+        bool foundExe = false;
+        
         if (exeList.is_open()) {
-            string exePath;
-            getline(exeList, exePath);
+            while (getline(exeList, exePath)) {
+                // Prefer 7SCW.exe or look for main executable
+                if (exePath.find("7SCW.exe") != string::npos || 
+                    exePath.find("7SCW_update") == string::npos) {
+                    foundExe = true;
+                    break;
+                }
+            }
             exeList.close();
+        }
+        
+        remove("__temp_exe_list.txt");
+        
+        if (foundExe && !exePath.empty()) {
+            // Copy the found exe to our update location
+            string copyCommand = "copy \"" + exePath + "\" 7SCW_update.exe /Y";
+            int copyResult = system(copyCommand.c_str());
             
-            if (!exePath.empty()) {
-                // Copy the found exe to our update location
-                string copyCommand = "copy \"" + exePath + "\" 7SCW_update.exe";
-                system(copyCommand.c_str());
-                
-                // Clean up
-                system("rmdir /s /q update_temp");
-                remove(filename.c_str());
-                remove("__temp_exe_list.txt");
-                
-                cout << "Update extracted and prepared successfully!" << endl;
-                return true;
+            if (copyResult == 0) {
+                // Verify the copied file
+                ifstream finalExe("7SCW_update.exe", ios::binary | ios::ate);
+                if (finalExe.is_open() && finalExe.tellg() > 1024) {
+                    cout << "Update extracted and prepared successfully!" << endl;
+                    
+                    // Clean up
+                    system("rmdir /s /q update_temp 2>nul");
+                    remove(filename.c_str());
+                    
+                    return true;
+                }
+                finalExe.close();
             }
         }
         
-        cout << "Error: No executable found in ZIP file." << endl;
-        system("rmdir /s /q update_temp");
+        cout << "Error: No valid executable found in ZIP file." << endl;
+        system("rmdir /s /q update_temp 2>nul");
         remove(filename.c_str());
-        remove("__temp_exe_list.txt");
+        remove("7SCW_update.exe");
         return false;
     }
     
-    cout << "Update downloaded successfully!" << endl;
-    return true;
+    // If it's an exe file, just rename it
+    if (filename.find(".exe") != string::npos) {
+        if (rename(filename.c_str(), "7SCW_update.exe") != 0) {
+            // If rename fails, copy the file
+            string copyCommand = "copy \"" + filename + "\" 7SCW_update.exe /Y";
+            system(copyCommand.c_str());
+        }
+        
+        // Verify the final file
+        ifstream finalExe("7SCW_update.exe", ios::binary | ios::ate);
+        if (finalExe.is_open() && finalExe.tellg() > 1024) {
+            cout << "Update downloaded successfully!" << endl;
+            remove(filename.c_str());
+            return true;
+        }
+        finalExe.close();
+    }
+    
+    cout << "Error: Final update file verification failed." << endl;
+    return false;
 }
 
 void installUpdate() {
