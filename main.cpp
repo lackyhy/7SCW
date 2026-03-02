@@ -21,46 +21,53 @@
 #include "include/h_file/terminal/terminal_commands.h"
 #include "include/h_file/system_info/system_info.h"
 #include "include/Logger.h"
+#include "include/h_file/dnsSSL/dnsSSL.h"
 
 using namespace std;
 
 volatile BOOL g_ctrlCPressed = FALSE;
 
-BOOL WINAPI CtrlHandler(DWORD fdwCtrlType) {
-    switch (fdwCtrlType) {
-        case CTRL_C_EVENT:
-            g_ctrlCPressed = TRUE;
-            return TRUE;
-        default:
-            return FALSE;
+BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
+{
+    switch (fdwCtrlType)
+    {
+    case CTRL_C_EVENT:
+        g_ctrlCPressed = TRUE;
+        return TRUE;
+    default:
+        return FALSE;
     }
 }
 
 void showStartupLocationsMenu();
 
-
-void hideCursor() {
+void hideCursor()
+{
     CONSOLE_CURSOR_INFO cursorInfo;
     GetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursorInfo);
     cursorInfo.bVisible = false;
     SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursorInfo);
 }
 
-void showCursor() {
+void showCursor()
+{
     CONSOLE_CURSOR_INFO cursorInfo;
     GetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursorInfo);
     cursorInfo.bVisible = true;
     SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursorInfo);
 }
 
-void showHelp() {
+void showHelp()
+{
     system("cls");
-    cout << "   File Manager and System Tools Help" << endl << endl;
+    cout << "   File Manager and System Tools Help" << endl
+         << endl;
     cout << "   Main Menu:" << endl;
     cout << "      - Use Up/Down arrows to navigate" << endl;
     cout << "      - Enter to select an option" << endl;
     cout << "      - Right arrow to open custom terminal" << endl;
-    cout << "      - Left arrow to open Advanced Security Menu" << endl << endl;
+    cout << "      - Left arrow to open Advanced Security Menu" << endl
+         << endl;
 
     cout << "   File Manager:" << endl;
     cout << "      - Navigate directories using Up/Down arrows" << endl;
@@ -70,7 +77,8 @@ void showHelp() {
     cout << "      - Right arrow on a file/folder for detailed info" << endl;
     cout << "      - Left arrow on a disk for disk management" << endl;
     cout << "      - 'OTHER' option for additional operations" << endl;
-    cout << "      - 'S' to search for files on the computer" << endl << endl;
+    cout << "      - 'S' to search for files on the computer" << endl
+         << endl;
 
     cout << "   System Tools:" << endl;
     cout << "       - Check Startup Locations: Interactive examination of startup locations with management commands" << endl;
@@ -80,7 +88,8 @@ void showHelp() {
     cout << "         * Shell/Userinit: Check and restore critical system values" << endl;
     cout << "       - Clear TEMP Files: Remove temporary files to free up disk space" << endl;
     cout << "       - System Info: Display system information" << endl;
-    cout << "       - Users: List system users" << endl << endl;
+    cout << "       - Users: List system users" << endl
+         << endl;
 
     cout << "   Key Bindings:" << endl;
     cout << "       - Up Arrow: Move selection up" << endl;
@@ -91,13 +100,15 @@ void showHelp() {
     cout << "       - '4': Refresh list of files/drives" << endl;
     cout << "       - 'q': Quit/Return to previous menu" << endl;
     cout << "       - 'b': Go back (in File Manager)" << endl;
-    cout << "       - 'h': Show this help menu" << endl << endl;
+    cout << "       - 'h': Show this help menu" << endl
+         << endl;
 
     cout << "   Custom Terminal:" << endl;
     cout << "       - Available from main menu by pressing right arrow" << endl;
     cout << "       - Type 'exit' or 'quit' to return to main menu" << endl;
     cout << "       - Supports bash-like commands and Windows commands" << endl;
-    cout << "       - Type 'help' in terminal for available commands" << endl << endl;
+    cout << "       - Type 'help' in terminal for available commands" << endl
+         << endl;
 
     cout << "   Advanced Security Menu:" << endl;
     cout << "       - Available from main menu by pressing left arrow" << endl;
@@ -106,12 +117,15 @@ void showHelp() {
     cout << "       - Custom Log Search: Search through logs with filters" << endl;
     cout << "       - System Integrity Check: Comprehensive system health check" << endl;
     cout << "       - Security Statistics: System security overview" << endl;
-    cout << "       - Export Security Report: Generate security reports" << endl << endl;
+    cout << "       - Export Security Report: Generate security reports" << endl
+         << endl;
 
     cout << "   Additional Programs:" << endl;
-    cout << "       - Access to various utilities such as SimpleUnlocker, Registry Workshop, ProcessHacker, etc." << endl << endl;
+    cout << "       - Access to various utilities such as SimpleUnlocker, Registry Workshop, ProcessHacker, etc." << endl
+         << endl;
 
-    cout << "       Press any key to return to the main menu..." << endl << endl;
+    cout << "       Press any key to return to the main menu..." << endl
+         << endl;
     cout << "   Arguments:" << endl;
     cout << "       -clear_tempfile - clear temp file" << endl;
     cout << "       -clear_autorun - clear Startup" << endl;
@@ -122,18 +136,23 @@ void showHelp() {
     _getch();
 }
 
-void drawMenu(const vector<string>& menuItems, int selectedIndex) {
+void drawMenu(const vector<string> &menuItems, int selectedIndex)
+{
     system("cls");
 
     cout << "Main Menu" << endl;
-    cout << "Use Up and Down arrows to navigate, Enter to select, 'h' for help, 'q' to exit" << endl << endl;
+    cout << "Use Up and Down arrows to navigate, Enter to select, 'h' for help, 'q' to exit" << endl
+         << endl;
 
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    for (int i = 0; i < menuItems.size(); i++) {
+    for (int i = 0; i < menuItems.size(); i++)
+    {
         bool isSel = (i == selectedIndex);
-        if (isSel) SetConsoleTextAttribute(hConsole, BACKGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+        if (isSel)
+            SetConsoleTextAttribute(hConsole, BACKGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
         cout << (isSel ? ">" : "   ") << menuItems[i] << endl;
-        if (isSel) SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        if (isSel)
+            SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
     }
 
     CONSOLE_SCREEN_BUFFER_INFO csbi;
@@ -142,50 +161,58 @@ void drawMenu(const vector<string>& menuItems, int selectedIndex) {
     cout << "\n\n";
     cout << endl;
 
-
-    for(int i = 0; i < consoleWidth; ++i) {
+    for (int i = 0; i < consoleWidth; ++i)
+    {
         cout << "-";
     }
 
     // Check for updates and display indicator
     string versionDisplay = "Version: " + string(VERSION);
-    if (isUpdateAvailable()) {
+    if (isUpdateAvailable())
+    {
         versionDisplay += " (Update Available!)";
         SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN | FOREGROUND_INTENSITY);
     }
     cout << versionDisplay << "" << endl;
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 
-    for(int i = 0; i < consoleWidth; ++i) {
+    for (int i = 0; i < consoleWidth; ++i)
+    {
         cout << "-";
     }
 }
 
-void showStartupLocationsMenu() {
+void showStartupLocationsMenu()
+{
     vector<string> options = {
-            "Startup Folder",
-            "Task Scheduler",
-            "Registry",
-            "Shell/Userinit\n",
-            "Restore to original\n",
-            "Back to Main Menu"
-    };
+        "Startup Folder",
+        "Task Scheduler",
+        "Registry",
+        "Shell/Userinit\n",
+        "Restore to original\n",
+        "Back to Main Menu"};
     int selectedIndex = 0;
     bool running = true;
 
-    while (running) {
+    while (running)
+    {
         system("cls");
         cout << "Check Startup Locations" << endl;
-        cout << "Use Up and Down arrows to navigate, Enter to select, 'q' to quit" << endl << endl;
+        cout << "Use Up and Down arrows to navigate, Enter to select, 'q' to quit" << endl
+             << endl;
 
         HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-        for (int i = 0; i < options.size(); i++) {
+        for (int i = 0; i < options.size(); i++)
+        {
             bool isSel = (i == selectedIndex);
-            if (isSel) SetConsoleTextAttribute(hConsole, BACKGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+            if (isSel)
+                SetConsoleTextAttribute(hConsole, BACKGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
 
             // Set color for "Restore to original" option text
-            if (options[i] == "Restore to original\n") {
-                if (!isSel) SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_INTENSITY);
+            if (options[i] == "Restore to original\n")
+            {
+                if (!isSel)
+                    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_INTENSITY);
             }
             cout << (isSel ? ">" : "   ") << options[i] << endl;
 
@@ -194,162 +221,187 @@ void showStartupLocationsMenu() {
         }
 
         int key = _getch();
-        if (g_ctrlCPressed) {
+        if (g_ctrlCPressed)
+        {
             g_ctrlCPressed = FALSE;
             running = false;
             continue;
         }
-        if (key == 224) {
+        if (key == 224)
+        {
             key = _getch();
-            switch (key) {
-                case 72: // Up arrow
-                    selectedIndex = (selectedIndex - 1 + options.size()) % options.size();
-                    break;
-                case 77: // Right arrow - Show ALL Startup
-                    SHOW_ALL_STARTUP();
-                    break;
-                case 80: // Down arrow
-                    selectedIndex = (selectedIndex + 1) % options.size();
-                    break;
+            switch (key)
+            {
+            case 72: // Up arrow
+                selectedIndex = (selectedIndex - 1 + options.size()) % options.size();
+                break;
+            case 77: // Right arrow - Show ALL Startup
+                SHOW_ALL_STARTUP();
+                break;
+            case 80: // Down arrow
+                selectedIndex = (selectedIndex + 1) % options.size();
+                break;
             }
         }
-        else if (key == 13) { // Enter
-            switch (selectedIndex) {
-                case 0: // Startup Folder
-                    checkStartupFolder();
-                    break;
-                case 1: // Task Scheduler
-                    checkTaskScheduler();
-                    break;
-                case 2: // Registry
-                    checkRegistryStartup();
-                    break;
-                case 3: // Shell/Userinit
-                    checkShellUserinit();
-                    break;
-                case 4: // Restore to original
-                    restoreStartupSettings();
-                    break;
-                case 5: // Back to Main Menu
-                    running = false;
-                    break;
+        else if (key == 13)
+        { // Enter
+            switch (selectedIndex)
+            {
+            case 0: // Startup Folder
+                checkStartupFolder();
+                break;
+            case 1: // Task Scheduler
+                checkTaskScheduler();
+                break;
+            case 2: // Registry
+                checkRegistryStartup();
+                break;
+            case 3: // Shell/Userinit
+                checkShellUserinit();
+                break;
+            case 4: // Restore to original
+                restoreStartupSettings();
+                break;
+            case 5: // Back to Main Menu
+                running = false;
+                break;
             }
         }
-        else if (key == 'q' || key == 'Q') {
+        else if (key == 'q' || key == 'Q')
+        {
             running = false;
         }
     }
 }
 
-void main_menu(bool safemod, bool isAdmin) {
+void main_menu(bool safemod, bool isAdmin)
+{
     Logger::info("Starting main menu - SafeMode: " + string(safemod ? "true" : "false") + ", Admin: " + string(isAdmin ? "true" : "false"));
-    
-    if ( safemod ) {
+
+    if (safemod)
+    {
         stringstream title;
         title << "Menu System [SAFE MODE], SafeMode: " << (safemode ? "true" : "false") << ", isAdmin: " << (isAdmin ? "true" : "false");
         SetConsoleTitleA(title.str().c_str());
         Logger::info("Running in Safe Mode");
-        vector <string> menuItems = {
-                "File Manager",
-                "Check Startup",
-                "Users\n",
-                "Clear TEMP Files",
-                "System Info\n",
-                "CMD",
-                "POWERSHELL\n",
-                "Help",
-                "Exit"
-        };
+        vector<string> menuItems = {
+            "File Manager",
+            "Check Startup",
+            "Users\n",
+            "Clear TEMP Files",
+            "Clear DNS and SSL",
+            "System Info\n",
+            "CMD",
+            "POWERSHELL\n",
+            "Help",
+            "Exit"};
 
         int selectedIndex = 0;
         bool running = true;
 
-        while (running) {
+        while (running)
+        {
             drawMenu(menuItems, selectedIndex);
 
             int key = _getch();
-            if (g_ctrlCPressed) { // Check for Ctrl+C
+            if (g_ctrlCPressed)
+            {                           // Check for Ctrl+C
                 g_ctrlCPressed = FALSE; // Reset the flag
-                running = false; // Exit the main menu loop
-                continue; // Skip the rest of the loop iteration
+                running = false;        // Exit the main menu loop
+                continue;               // Skip the rest of the loop iteration
             }
-            if (key == 224) { // Arrow key pressed
+            if (key == 224)
+            { // Arrow key pressed
                 key = _getch();
-                switch (key) {
-                    case 72: // Up arrow
-                        selectedIndex = (selectedIndex - 1 + menuItems.size()) % menuItems.size();
-                        break;
-                    case 75: // Left arrow - Advanced Security Menu
-                        showAdvancedSecurityMenu();
-                        break;
-                    case 77: // Right arrow - Open custom terminal
-                        customTerminal();
-                        break;
-                    case 80: // Down arrow
-                        selectedIndex = (selectedIndex + 1) % menuItems.size();
-                        break;
+                switch (key)
+                {
+                case 72: // Up arrow
+                    selectedIndex = (selectedIndex - 1 + menuItems.size()) % menuItems.size();
+                    break;
+                case 75: // Left arrow - Advanced Security Menu
+                    showAdvancedSecurityMenu();
+                    break;
+                case 77: // Right arrow - Open custom terminal
+                    customTerminal();
+                    break;
+                case 80: // Down arrow
+                    selectedIndex = (selectedIndex + 1) % menuItems.size();
+                    break;
                 }
-            } else if (key == 13) { // Enter key
-                switch (selectedIndex) {
-                    case 0: // File Manager
-                        Logger::info("Opening File Manager");
-                        file_manger();
-                        break;
-                    case 1: // Check Startup
-                        Logger::info("Opening Startup Locations Menu");
-                        showStartupLocationsMenu();
-                        break;
-                    case 2: // Users
-                        Logger::info("Listing system users");
-                        system("cls");
-                        cout << "Listing Users:" << endl << endl;
-                        system("net user");
-                        cout << "\nPress any key to continue...";
-                        _getch();
-                        break;
-                    case 3: // Clear Temp File
-                        Logger::info("Clearing temporary files");
-                        clear_temp_file();
-                        _getch();
-                        break;
-                    case 4: // System Info
-                        Logger::info("Displaying system information");
-                        system("cls");
-                        print_SystemInfo();
-                        _getch();
-                        break;
-                    case 5: // CMD
-                        Logger::info("Opening CMD");
-                        system("cls");
-                        system("cmd");
-                        _getch();
-                        break;
-                    case 6: // POWERSHELL
-                        Logger::info("Opening PowerShell");
-                        system("cls");
-                        system("powershell");
-                        _getch();
-                        break;
-                    case 7: // Help
-                        Logger::info("Showing help menu");
-                        showHelp();
-                        break;
-                    case 8: // Exit
-                        Logger::info("Exiting application");
-                        running = false;
-                        break;
+            }
+            else if (key == 13)
+            { // Enter key
+                switch (selectedIndex)
+                {
+                case 0: // File Manager
+                    Logger::info("Opening File Manager");
+                    file_manger();
+                    break;
+                case 1: // Check Startup
+                    Logger::info("Opening Startup Locations Menu");
+                    showStartupLocationsMenu();
+                    break;
+                case 2: // Users
+                    Logger::info("Listing system users");
+                    system("cls");
+                    cout << "Listing Users:" << endl
+                         << endl;
+                    system("net user");
+                    cout << "\nPress any key to continue...";
+                    _getch();
+                    break;
+                case 3: // Clear Temp File
+                    Logger::info("Clearing temporary files");
+                    clear_temp_file();
+                    _getch();
+                    break;
+                case 4: // Clear DNS and SSL
+                    Logger::info("Clearing DNS and SSL");
+                    clear_dns_ssl_lite_mode();
+                    break;
+                case 5: // System Info
+                    Logger::info("Displaying system information");
+                    system("cls");
+                    print_SystemInfo();
+                    break;
+                case 6: // CMD
+                    Logger::info("Opening CMD");
+                    system("cls");
+                    system("cmd");
+                    _getch();
+                    break;
+                case 7: // POWERSHELL
+                    Logger::info("Opening PowerShell");
+                    system("cls");
+                    system("powershell");
+                    _getch();
+                    break;
+                case 8: // Help
+                    Logger::info("Showing help menu");
+                    showHelp();
+                    break;
+                case 9: // Exit
+                    Logger::info("Exiting application");
+                    running = false;
+                    break;
                 }
-            } else if (key == 'h' || key == 'H') {
+            }
+            else if (key == 'h' || key == 'H')
+            {
                 showHelp();
-            } else if (key == 'q' || key == 'Q') {
+            }
+            else if (key == 'q' || key == 'Q')
+            {
                 running = false;
             }
         }
         return;
+    }
+    else
+    {
 
-    } else {
-
-        if (!isAdmin) {
+        if (!isAdmin)
+        {
             Logger::warning("Program must be run as administrator");
             cout << "The program must be run as administrator!" << endl;
             cout << "Run with '-safemod' argument for limited functionality without admin rights." << endl;
@@ -364,107 +416,125 @@ void main_menu(bool safemod, bool isAdmin) {
         SetConsoleTitleA(title.str().c_str());
         hideCursor();
 
-
         // Register console control handler
-        if (!SetConsoleCtrlHandler(CtrlHandler, TRUE)) {
+        if (!SetConsoleCtrlHandler(CtrlHandler, TRUE))
+        {
             // Handle error if registration fails
             cout << "Error: Failed to register Ctrl+C handler!" << endl;
             // Decide whether to exit or continue
         }
 
-        vector <string> menuItems = {
-                "File Manager",
-                "Check Startup",
-                "Users\n",
-                "Clear TEMP Files",
-                "System Info\n",
-                "CMD",
-                "POWERSHELL\n",
-                "Help",
-                "Exit"
+        vector<string> menuItems = {
+            "File Manager",
+            "Check Startup",
+            "Users\n",
+            "Clear TEMP Files",
+            "Clear DNS and SSL",
+            "System Info\n",
+            "CMD",
+            "POWERSHELL\n",
+            "Help",
+            "Exit"
         };
 
         int selectedIndex = 0;
         bool running = true;
 
-        while (running) {
+        while (running)
+        {
             drawMenu(menuItems, selectedIndex);
 
             int key = _getch();
-            if (g_ctrlCPressed) { // Check for Ctrl+C
+            if (g_ctrlCPressed)
+            {                           // Check for Ctrl+C
                 g_ctrlCPressed = FALSE; // Reset the flag
-                running = false; // Exit the main menu loop
-                continue; // Skip the rest of the loop iteration 
+                running = false;        // Exit the main menu loop
+                continue;               // Skip the rest of the loop iteration
             }
-            if (key == 224) { // Arrow key pressed
+            if (key == 224)
+            { // Arrow key pressed
                 key = _getch();
-                switch (key) {
-                    case 72: // Up arrow
-                        selectedIndex = (selectedIndex - 1 + menuItems.size()) % menuItems.size();
-                        break;
-                    case 75: // Left arrow - Advanced Security Menu
-                        showAdvancedSecurityMenu();
-                        break;
-                    case 77: // Right arrow - Open custom terminal
-                        customTerminal();
-                        break;
-                    case 80: // Down arrow
-                        selectedIndex = (selectedIndex + 1) % menuItems.size();
-                        break;
+                switch (key)
+                {
+                case 72: // Up arrow
+                    selectedIndex = (selectedIndex - 1 + menuItems.size()) % menuItems.size();
+                    break;
+                case 75: // Left arrow - Advanced Security Menu
+                    showAdvancedSecurityMenu();
+                    break;
+                case 77: // Right arrow - Open custom terminal
+                    customTerminal();
+                    break;
+                case 80: // Down arrow
+                    selectedIndex = (selectedIndex + 1) % menuItems.size();
+                    break;
                 }
-            } else if (key == 13) { // Enter key
-                switch (selectedIndex) {
-                    case 0: // File Manager
-                        Logger::info("Opening File Manager");
-                        file_manger();
-                        break;
-                    case 1: // Check Startup
-                        Logger::info("Opening Startup Locations Menu");
-                        showStartupLocationsMenu();
-                        break;
-                    case 2: // Users
-                        Logger::info("Listing system users");
-                        system("cls");
-                        cout << "Listing Users:" << endl << endl;
-                        system("net user");
-                        cout << "\nPress any key to continue...";
-                        _getch();
-                        break;
-                    case 3: // Clear Temp File
-                        Logger::info("Clearing temporary files");
-                        clear_temp_file();
-                        _getch();
-                        break;
-                    case 4: // System Info
-                        Logger::info("Displaying system information");
-                        system("cls");
-                        print_SystemInfo();
-                        _getch();
-                        break;
-                    case 5: // CMD
-                        Logger::info("Opening CMD");
-                        system("cls");
-                        system("cmd");
-                        _getch();
-                        break;
-                    case 6: // POWERSHELL
-                        Logger::info("Opening PowerShell");
-                        system("cls");
-                        system("powershell");
-                        _getch();
-                        break;
-                    case 7: // Help
-                        Logger::info("Showing help menu");
-                        showHelp();
-                        break;
-                    case 8: // Exit
-                        Logger::info("Exiting application");
-                        running = false;
-                        break;
+            }
+            else if (key == 13)
+            { // Enter key
+                switch (selectedIndex)
+                {
+                case 0: // File Manager
+                    Logger::info("Opening File Manager");
+                    file_manger();
+                    break;
+                case 1: // Check Startup
+                    Logger::info("Opening Startup Locations Menu");
+                    showStartupLocationsMenu();
+                    break;
+                case 2: // Users
+                    Logger::info("Listing system users");
+                    system("cls");
+                    cout << "Listing Users:" << endl
+                         << endl;
+                    system("net user");
+                    cout << "\nPress any key to continue...";
+                    _getch();
+                    break;
+                case 3: // Clear Temp File
+                    Logger::info("Clearing temporary files");
+                    clear_temp_file();
+                    _getch();
+                    break;
+                case 4: // Clear DNS and SSL
+                    Logger::info("Clearing DNS and SSL");
+                    clear_dns_ssl_lite_mode();
+                    _getch();
+                    break;
+                case 5: // System Info
+                    Logger::info("Displaying system information");
+                    system("cls");
+                    print_SystemInfo();
+                    _getch();
+                    break;
+                case 6: // CMD
+                    Logger::info("Opening CMD");
+                    system("cls");
+                    system("cmd");
+                    _getch();
+                    break;
+                case 7: // POWERSHELL
+                    Logger::info("Opening PowerShell");
+                    system("cls");
+                    system("powershell");
+                    _getch();
+                    break;
+                case 8: // Help
+                    Logger::info("Showing help menu");
+                    showHelp();
+                    break;
+                case 9: // Exit
+                    Logger::info("Exiting application");
+                    running = false;
+                    break;
                 }
-            } else if (key == 'h' || key == 'H') {
+            }
+            else if (key == 'h' || key == 'H')
+            {
                 showHelp();
-            } else if (key == 'q' || key == 'Q') {
+            }
+            else if (key == 'q' || key == 'Q')
+            {
                 running = false;
             }
         }
@@ -474,7 +544,8 @@ void main_menu(bool safemod, bool isAdmin) {
     }
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     Logger::info("Launch SID and request administrator rights");
     SID_IDENTIFIER_AUTHORITY NtAuthority = SECURITY_NT_AUTHORITY;
     PSID AdministratorsGroup;
@@ -482,7 +553,8 @@ int main(int argc, char *argv[]) {
                                  SECURITY_BUILTIN_DOMAIN_RID,
                                  DOMAIN_ALIAS_RID_ADMINS,
                                  0, 0, 0, 0, 0, 0,
-                                 &AdministratorsGroup)) {
+                                 &AdministratorsGroup))
+    {
         CheckTokenMembership(NULL, AdministratorsGroup, &isAdmin);
         FreeSid(AdministratorsGroup);
     }
@@ -492,9 +564,10 @@ int main(int argc, char *argv[]) {
 
     // Initialize logger if --logs or -logs_console flag is provided
     Logger::initialize(logs_enabled, logs_console);
-    
+
     // Test logs if console logging is enabled
-    if (logs_console) {
+    if (logs_console)
+    {
         Logger::info("Console logging test - this should appear in separate console");
         Logger::success("Console logging is working!");
     }
@@ -505,9 +578,10 @@ int main(int argc, char *argv[]) {
     main_menu(safemode, isAdmin);
     Logger::success("success start main menu");
     // Close log console if it was opened
-    if (logs_console) {
+    if (logs_console)
+    {
         Logger::closeLogConsole();
     }
-    
+
     return 0;
 }

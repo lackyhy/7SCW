@@ -5,7 +5,9 @@
 #include "conio.h"
 #include "fstream"
 
+#include "locale.h"
 #include "windows.h"
+#include "conio.h"
 #include "../../h_file/terminal/terminal_commands.h"
 #include "../../h_file/terminal/terminal.h"
 #include "../../h_file/activator/menu.h"
@@ -13,6 +15,7 @@
 #include "../../h_file/file/clear_cookie.h"
 #include "../../Logger.h"
 #include "../../h_file/main.h"
+#include "../../h_file/dnsSSL/dnsSSL.h"
 
 using namespace std;
 
@@ -23,7 +26,7 @@ vector<string> availableCommands = {
     "cat", "echo", "clear", "cls", "date", "whoami", "hostname",
     "systeminfo", "processes", "services", "netstat", "ipconfig",
     "encrypt", "deencrypt", "create_hash", "network", "search_file",
-    "cookie_", "logs_"
+    "cookie_", "logs_", "clear_dns_ssl_lite_mode", "clear_dns_ssl_forced_mode", "ssl", "show_ssl", "about"
 };
 
 // Function for command auto-completion
@@ -106,6 +109,104 @@ string readLineWithTabCompletion() {
     }
 }
 
+void about_ru() {
+    SetConsoleOutputCP(65001);
+    SetConsoleCP(65001);
+    setlocale(LC_ALL, "ru_RU");  // Установка русской локализации для вывода текста
+    system("cls");
+    cout << "Данная программа начала свое существование 1 сентября 2025 года. Она была создана с целью упростить базовую работу с Windows 10/11, но в итоге стала моим главным и основным проектом." << endl;
+    cout << "" << endl;
+    cout << "Немного истории о ее появлении. Когда я сидел с другом в Discord, мы чинили компьютер рутинными действиями, такими как: очистка кеша, удаление файлов и очистка автозагрузки." << endl;
+    cout << "Тогда мне пришла идея: почему бы не написать программу, которая будет уметь это делать и делать быстро? (P.S.: тогда я еще не сильно знал C++)." << endl;
+    cout << "И главными критериями были следующие моменты: 1) Скорость, 2) Запуск ВЕЗДЕ, 3) Понятный интерфейс. Это были главные критерии при создании." << endl;
+    cout << "Тогда я и начал изучение C++ с нуля, и в 14 лет я написал данную программу. 18 сентября 2025 года я впервые выложил 7SCW на GitHub." << endl;
+    cout << "Я был доволен результатом, но функционал желал лучшего. Тогда люди начали говорить мне, что можно добавить и чем обычно пользуются люди." << endl;
+    cout << "И с этого момента \"просто программа\" стала для меня основным проектом." << endl;
+    cout << "" << endl;
+    cout << "Я выражаю ОГРОМНОЕ СПАСИБО людям, которые меня поддерживали и просто сидели со мной)" << endl;
+    cout << "Вот список никнеймов: ʚAkane (Гелечка), Kelirs, Kiwikq. Все эти люди так или иначе помогали при создании 7SCW." << endl;
+    cout << "А на момент написания этого текста огромное спасибо ʚAkane, ведь она и дала идеи для дальнейшего развития программы, и просто сидит со мной и болтает)" << endl;
+    _getch();
+}
+
+void about_en() {
+    system("cls");
+    cout << "This program began its existence on September 1, 2025. It was created with the goal of simplifying basic work with Windows 10/11, but eventually became my main and primary project." << endl;
+    cout << "" << endl;
+    cout << "A little history about its appearance. When I was sitting with a friend on Discord, we were fixing a computer with routine actions such as: clearing the cache, deleting files, and cleaning up autostart." << endl;
+    cout << "That's when I got the idea: why not write a program that can do this and do it quickly? (P.S.: at that time I didn't know C++ very well yet)." << endl;
+    cout << "And the main criteria were the following points: 1) Speed, 2) Launch ANYWHERE, 3) User-friendly interface. These were the main criteria during creation." << endl;
+    cout << "That's when I started learning C++ from scratch, and at the age of 14 I wrote this program. On September 18, 2025, I first uploaded 7SCW to GitHub." << endl;
+    cout << "I was pleased with the result, but the functionality could have been better. Then people started telling me what could be added and what people usually use." << endl;
+    cout << "And from that moment on, \"just a program\" became my main project." << endl;
+    cout << "" << endl;
+    cout << "I express HUGE THANKS to the people who supported me and just hung out with me)" << endl;
+    cout << "Here is the list of nicknames: ʚAkane (Gelechka), Kelirs, Kiwikq. All these people in one way or another helped in creating 7SCW." << endl;
+    cout << "And at the time of writing this text, huge thanks to ʚAkane, because she gave ideas for further development of the program, and just sits with me and chats)" << endl;
+    _getch();  
+}
+
+void about_this() {
+    vector<string> menuItems = {
+        "ru_RU",
+        "en_EN"
+    };
+    int selectedIndex = 0;
+    bool running = true;
+
+    while (running) 
+    {
+        system("cls");
+        cout << "'q' to quit" << endl;
+        cout << "Use Up/Down arrows to navigate, Enter to select" << endl << endl;
+        
+        for (int i = 0; i < menuItems.size(); i++) {
+            if (i == selectedIndex) {
+                cout << "> " << menuItems[i] << endl;
+            } else {
+                cout << "   " << menuItems[i] << endl;
+            }
+        } 
+        
+        int key = _getch();
+
+        if (g_ctrlCPressed)
+        {
+            g_ctrlCPressed = FALSE;
+            running = false;
+            continue;
+        }
+        if (key == 224)
+        {
+            key = _getch();
+            switch (key) {
+                case 72: // Up arrow
+                    selectedIndex = (selectedIndex - 1 + menuItems.size()) % menuItems.size();
+                    break;
+                case 80: // Down arrow
+                    selectedIndex = (selectedIndex + 1) % menuItems.size();
+                    break;
+            }
+        }
+        else if (key == 13) {
+            switch (selectedIndex)
+            {
+                case 0: // ru_RU
+                    about_ru();
+                    break;
+                case 1: // en_EN
+                    about_en();
+                    break;
+            }
+        }
+        else if (key == 'q' || key == 'Q')
+        {
+            system("cls");
+            running = false;
+        }
+    }
+}
+
 void customTerminal() {
     system("cls");
     Logger::info("Opening custom terminal");
@@ -183,6 +284,11 @@ void customTerminal() {
             cout << "  info             - Show program information and GitHub link" << endl;
             cout << "  help             - Show this help" << endl;
             cout << "  exit, quit       - Exit terminal" << endl;
+            cout << "  clear_dns_ssl_lite_mode - Clear DNS and SSL (lite mode)" << endl;
+            cout << "  clear_dns_ssl_forced_mode - Clear DNS and SSL (forced mode)" << endl;
+            cout << "ssl                - clear_dns_ssl_forced_mode()" << endl;
+            cout << "  show_ssl           - Show SSL information" << endl;
+            cout << "  about              - About this program ";
             cout << "  Any other command will be executed as Windows command" << endl << endl;
         }
         else if (cmd == "info") {
@@ -224,6 +330,9 @@ void customTerminal() {
         }
         else if (cmd == "pwd") {
             cout << currentDir << endl;
+        }
+        else if (cmd == "about") {
+            about_this();
         }
         else if (cmd == "activate_") {
             Logger::info("Running activator menu");
@@ -303,6 +412,22 @@ void customTerminal() {
                 Logger::warning("rm command used without filename");
                 cout << "Error: File name required" << endl;
             }
+        }
+        else if (cmd == "clear_dns_ssl_lite_mode") {
+            Logger::info("Clearing DNS and SSL (lite mode)");
+            clear_dns_ssl_lite_mode();
+        }
+        else if (cmd == "clear_dns_ssl_forced_mode") {
+            Logger::info("Clearing DNS and SSL (forced mode)");
+            clear_dns_ssl_forced_mode();
+        }
+        else if (cmd == "ssl") {    
+            Logger::info("Showing SSL information");
+            clear_dns_ssl_forced_mode();
+        }
+        else if (cmd == "show_ssl") {
+            Logger::info("Showing SSL information");
+            showSSLInfo();
         }
         else if (cmd.substr(0, 5) == "rmdir") {
             string dirName = command.substr(5);

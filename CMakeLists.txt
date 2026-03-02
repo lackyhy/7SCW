@@ -4,6 +4,8 @@ project(7SCW)
 
 set(CMAKE_CXX_STANDARD 20)
 
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -finput-charset=UTF-8 -fexec-charset=UTF-8")
 set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
 
 add_executable(7SCW main.cpp
@@ -59,6 +61,9 @@ add_executable(7SCW main.cpp
 
         include/Logger.cpp
         include/Logger.h
+
+        include/cpp_file/dnsSSL/dnsSSL.cpp
+        include/h_file/dnsSSL/dnsSSL.h
 )
 
 target_link_libraries(7SCW 
