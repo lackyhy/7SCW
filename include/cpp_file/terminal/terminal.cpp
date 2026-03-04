@@ -27,7 +27,7 @@ vector<string> availableCommands = {
     "cat", "echo", "clear", "cls", "date", "whoami", "hostname",
     "systeminfo", "processes", "services", "netstat", "ipconfig",
     "encrypt", "deencrypt", "create_hash", "network", "search_file",
-    "cookie_", "logs_", "clear_dns_ssl_lite_mode", "clear_dns_ssl_forced_mode", "ssl", "show_ssl", "about", "show_web", "repair", "microsoft_store"};
+    "cookie_", "logs_", "clear_dns_ssl_lite_mode", "clear_dns_ssl_forced_mode", "ssl", "show_ssl", "about", "show_web", "repair", "microsoft_store", "bay"};
 
 // Function for command auto-completion
 string autoCompleteCommand(const string &input)
@@ -301,7 +301,7 @@ void customTerminal()
         transform(cmd.begin(), cmd.end(), cmd.begin(), ::tolower);
 
         // Handle built-in commands
-        if (cmd == "exit" || cmd == "quit" || cmd == "q")
+        if (cmd == "exit" || cmd == "quit" || cmd == "q" || cmd == "bye")
         {
             Logger::info("Exiting custom terminal");
             break;
