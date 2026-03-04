@@ -64,6 +64,9 @@ add_executable(7SCW main.cpp
 
         include/cpp_file/dnsSSL/dnsSSL.cpp
         include/h_file/dnsSSL/dnsSSL.h
+
+        include/cpp_file/show_web/show_web.cpp
+        include/h_file/show_web/show_web.h
 )
 
 target_link_libraries(7SCW 
