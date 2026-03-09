@@ -66,6 +66,9 @@ add_executable(7SCW main.cpp
 
         include/cpp_file/show_web/show_web.cpp
         include/h_file/show_web/show_web.h
+        
+        include/cpp_file/certificat/crt.cpp
+        include/h_file/certificat/crt.h
 )
 
 target_link_libraries(7SCW 

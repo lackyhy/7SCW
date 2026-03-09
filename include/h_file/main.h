@@ -4,7 +4,7 @@
 #include "string"
 #include "windows.h"
 
-const std::string VERSION = "12.9";
+const std::string VERSION = "13.4";
 
 extern volatile BOOL g_ctrlCPressed;
 BOOL WINAPI CtrlHandler(DWORD fdwCtrlType);

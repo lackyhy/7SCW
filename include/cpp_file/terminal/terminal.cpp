@@ -17,6 +17,7 @@
 #include "../../h_file/main.h"
 #include "../../h_file/dnsSSL/dnsSSL.h"
 #include "../../h_file/show_web/show_web.h"
+#include "../../h_file/certificat/crt.h"
 
 using namespace std;
 
@@ -27,7 +28,21 @@ vector<string> availableCommands = {
     "cat", "echo", "clear", "cls", "date", "whoami", "hostname",
     "systeminfo", "processes", "services", "netstat", "ipconfig",
     "encrypt", "deencrypt", "create_hash", "network", "search_file",
-    "cookie_", "logs_", "clear_dns_ssl_lite_mode", "clear_dns_ssl_forced_mode", "ssl", "show_ssl", "about", "show_web", "repair", "microsoft_store", "bay"};
+    "cookie_", "logs_", "clear_dns_ssl_lite_mode", "clear_dns_ssl_forced_mode", "ssl", "show_ssl", "about", "show_web", "repair", "microsoft_store", "bay", "sha256", "certificate"};
+
+string getClipboardText() {
+    if (!OpenClipboard(nullptr)) return "";
+    HANDLE hData = GetClipboardData(CF_TEXT);
+    if (hData == nullptr) {
+        CloseClipboard();
+        return "";
+    }
+    char* pszText = static_cast<char*>(GlobalLock(hData));
+    string text = pszText ? pszText : "";
+    GlobalUnlock(hData);
+    CloseClipboard();
+    return text;
+}
 
 // Function for command auto-completion
 string autoCompleteCommand(const string &input)
@@ -119,6 +134,11 @@ string readLineWithTabCompletion()
             cout << "^C" << endl;
             input = "";
             return input;
+        }
+        else if (ch == 22) { // Ctrl+V
+            string paste = getClipboardText();
+            input += paste;
+            cout << paste;
         }
         else if (isprint(ch))
         { // Printable character
@@ -305,6 +325,26 @@ void customTerminal()
         {
             Logger::info("Exiting custom terminal");
             break;
+        }
+        else if (cmd.substr(0, 6) == "sha256") 
+        {
+            string target = command.substr(6);
+            // Убираем пробелы в начале
+            target.erase(0, target.find_first_not_of(" "));
+
+            if (target.empty()) {
+                // Если аргумента нет — показываем сертификаты (как выше)
+                system("powershell -Command \"Get-ChildItem -Path Cert:\\CurrentUser\\My | Where-Object { $_.Subject -match 'Lcky Team' } | Select-Object Subject, Thumbprint | fl\"");
+            } else {
+                // Если есть путь к файлу — считаем его хеш
+                Logger::info("Calculating SHA256 for file: " + target);
+                string fileHashCmd = "powershell -Command \"Get-FileHash '" + target + "' -Algorithm SHA256 | Format-List\"";
+                system(fileHashCmd.c_str());
+            }
+        }
+        else if (cmd == "certificate")
+        {
+            ShowFileSignerMenu();
         }
         else if (cmd == "help")
         {
