@@ -44,7 +44,6 @@ ULARGE_INTEGER calculateFolderSize(const string& path) {
                 string fullPath = path + "\\" + findData.cFileName;
 
                 if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-                    // Рекурсивно подсчитываем размер подпапки
                     Logger::info("Processing subdirectory: " + fullPath);
                     ULARGE_INTEGER subFolderSize = calculateFolderSize(fullPath);
                     totalSize.QuadPart += subFolderSize.QuadPart;

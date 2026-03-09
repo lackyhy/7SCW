@@ -22,6 +22,7 @@
 #include "include/h_file/system_info/system_info.h"
 #include "include/Logger.h"
 #include "include/h_file/dnsSSL/dnsSSL.h"
+#include "include/h_file/show_web/show_web.h"
 
 using namespace std;
 
@@ -100,6 +101,7 @@ void showHelp()
     cout << "       - '4': Refresh list of files/drives" << endl;
     cout << "       - 'q': Quit/Return to previous menu" << endl;
     cout << "       - 'b': Go back (in File Manager)" << endl;
+    cout << "       - 'i': Show web" << endl;
     cout << "       - 'h': Show this help menu" << endl
          << endl;
 
@@ -129,7 +131,7 @@ void showHelp()
     cout << "   Arguments:" << endl;
     cout << "       -clear_tempfile - clear temp file" << endl;
     cout << "       -clear_autorun - clear Startup" << endl;
-    cout << "       -safemod - run in safe mode (works in current terminal without admin rights)" << endl;
+    cout << "       -safemod -show_web run in safe mode (works in current terminal without admin rights)" << endl;
     cout << "       --logs - enable logging to logs.txt file" << endl;
     cout << "       -logs_console - open separate console window for logs" << endl;
 
@@ -390,6 +392,10 @@ void main_menu(bool safemod, bool isAdmin)
             {
                 showHelp();
             }
+            else if (key == 'i' || key == 'I')
+            {
+                show_web_all();
+            }
             else if (key == 'q' || key == 'Q')
             {
                 running = false;
@@ -532,6 +538,10 @@ void main_menu(bool safemod, bool isAdmin)
             else if (key == 'h' || key == 'H')
             {
                 showHelp();
+            }
+            else if (key == 'i' || key == 'I')
+            {
+                show_web_all();
             }
             else if (key == 'q' || key == 'Q')
             {

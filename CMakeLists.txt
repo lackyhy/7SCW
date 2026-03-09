@@ -1,13 +1,12 @@
-# cmake_minimum_required(VERSION <specify CMake version here>)
 cmake_minimum_required(VERSION 3.16)
 project(7SCW)
 
 set(CMAKE_CXX_STANDARD 20)
 
-
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -finput-charset=UTF-8 -fexec-charset=UTF-8")
 set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
 
+# ИСПОЛНЯЕМЫЙ ФАЙЛ (только исходники!)
 add_executable(7SCW main.cpp
         include/h_file/main.h
 
