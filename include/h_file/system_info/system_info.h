@@ -1,8 +1,11 @@
 #ifndef SystemInfoH
 #define SystemInfoH
 
-// void 
-void print_SystemInfo();
+#include <string>
+#include <vector>
 
+using namespace std;
+
+void print_SystemInfo();
 
 #endif

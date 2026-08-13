@@ -23,6 +23,7 @@
 #include "include/Logger.h"
 #include "include/h_file/dnsSSL/dnsSSL.h"
 #include "include/h_file/show_web/show_web.h"
+#include "include/h_file/users/users_manager.h"
 
 using namespace std;
 
@@ -73,12 +74,13 @@ void showHelp()
     cout << "   File Manager:" << endl;
     cout << "      - Navigate directories using Up/Down arrows" << endl;
     cout << "      - Enter to open folders or select files" << endl;
+    cout << "      - 'P' / 'p' to quick preview text files" << endl;
+    cout << "      - 'O' / 'o' for Additional Operations (Copy, Move, Delete, Rename)" << endl;
+    cout << "      - 'S' / 's' to search for files on the computer" << endl;
+    cout << "      - Right arrow on a file/folder for detailed info & MD5/SHA256 checksums" << endl;
+    cout << "      - Left arrow on a file/folder for management options & attribute editing" << endl;
     cout << "      - 'q' to return to previous menu" << endl;
-    cout << "      - 'b' to go back in directory history" << endl;
-    cout << "      - Right arrow on a file/folder for detailed info" << endl;
-    cout << "      - Left arrow on a disk for disk management" << endl;
-    cout << "      - 'OTHER' option for additional operations" << endl;
-    cout << "      - 'S' to search for files on the computer" << endl
+    cout << "      - 'b' to go back in directory history" << endl
          << endl;
 
     cout << "   System Tools:" << endl;
@@ -88,16 +90,18 @@ void showHelp()
     cout << "         * Task Scheduler: View and manage scheduled startup tasks" << endl;
     cout << "         * Shell/Userinit: Check and restore critical system values" << endl;
     cout << "       - Clear TEMP Files: Remove temporary files to free up disk space" << endl;
-    cout << "       - System Info: Display system information" << endl;
-    cout << "       - Users: List system users" << endl
+    cout << "       - System Info: Detailed CPU, Memory (RAM load bar), GPU/Display, Storage capacity, Uptime & Adapters" << endl;
+    cout << "       - Users Manager: Full User Account Manager (Create, Password Reset, Enable/Disable, Role Grant, Delete)" << endl
          << endl;
 
     cout << "   Key Bindings:" << endl;
     cout << "       - Up Arrow: Move selection up" << endl;
     cout << "       - Down Arrow: Move selection down" << endl;
     cout << "       - Enter: Select/Confirm" << endl;
-    cout << "       - Right Arrow: Show detailed info (in File Manager)" << endl;
-    cout << "       - Left Arrow: Disk management (in File Manager)" << endl;
+    cout << "       - Right Arrow: Show detailed info & checksums (in File Manager)" << endl;
+    cout << "       - Left Arrow: Management menu & attribute editing (in File Manager)" << endl;
+    cout << "       - 'P' / 'p': Quick Text File Preview" << endl;
+    cout << "       - 'O' / 'o': Additional Operations (Copy, Move, Delete, Rename)" << endl;
     cout << "       - '4': Refresh list of files/drives" << endl;
     cout << "       - 'q': Quit/Return to previous menu" << endl;
     cout << "       - 'b': Go back (in File Manager)" << endl;
@@ -129,11 +133,16 @@ void showHelp()
     cout << "       Press any key to return to the main menu..." << endl
          << endl;
     cout << "   Arguments:" << endl;
-    cout << "       -clear_tempfile - clear temp file" << endl;
-    cout << "       -clear_autorun - clear Startup" << endl;
-    cout << "       -safemod -show_web run in safe mode (works in current terminal without admin rights)" << endl;
-    cout << "       --logs - enable logging to logs.txt file" << endl;
-    cout << "       -logs_console - open separate console window for logs" << endl;
+    cout << "       -safemode / -safemod   - Run app in safe mode (limited rights)" << endl;
+    cout << "       -clear_tempfile        - Clear system temporary files" << endl;
+    cout << "       -clear_autorun         - Restore startup registry and folders" << endl;
+    cout << "       --systemInfo           - Print detailed system information" << endl;
+    cout << "       --terminal             - Launch interactive custom terminal" << endl;
+    cout << "       --clear_logs           - Clear log history and delete logs.txt" << endl;
+    cout << "       --version / -v         - Display current program version" << endl;
+    cout << "       --help / -h            - Display command line help" << endl;
+    cout << "       --logs                 - Enable logging to logs.txt" << endl;
+    cout << "       -logs_console          - Open separate console window for logs" << endl;
 
     _getch();
 }
@@ -344,13 +353,8 @@ void main_menu(bool safemod, bool isAdmin)
                     showStartupLocationsMenu();
                     break;
                 case 2: // Users
-                    Logger::info("Listing system users");
-                    system("cls");
-                    cout << "Listing Users:" << endl
-                         << endl;
-                    system("net user");
-                    cout << "\nPress any key to continue...";
-                    _getch();
+                    Logger::info("Opening Users Manager");
+                    showUsersManagerMenu();
                     break;
                 case 3: // Clear Temp File
                     Logger::info("Clearing temporary files");
@@ -489,13 +493,8 @@ void main_menu(bool safemod, bool isAdmin)
                     showStartupLocationsMenu();
                     break;
                 case 2: // Users
-                    Logger::info("Listing system users");
-                    system("cls");
-                    cout << "Listing Users:" << endl
-                         << endl;
-                    system("net user");
-                    cout << "\nPress any key to continue...";
-                    _getch();
+                    Logger::info("Opening Users Manager");
+                    showUsersManagerMenu();
                     break;
                 case 3: // Clear Temp File
                     Logger::info("Clearing temporary files");

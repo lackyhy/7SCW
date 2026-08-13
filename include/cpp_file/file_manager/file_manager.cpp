@@ -1,18 +1,29 @@
-#include "iostream"
-#include "string"
-#include "vector"
-#include "cstring"
-#include "iomanip"
-#include "algorithm"
+#include <iostream>
+#include <string>
+#include <vector>
+#include <cstring>
+#include <iomanip>
+#include <algorithm>
+#include <fstream>
+#include <sstream>
+#include <cmath>
+#include <windows.h>
+#include <wincrypt.h>
+#include <conio.h>
 
-
-#include "windows.h"
-#include "conio.h"
 #include "../../h_file/file_manager/file_manager.h"
 #include "../../h_file/main.h"
 #include "../../Logger.h"
 
 using namespace std;
+
+#pragma comment(lib, "advapi32.lib")
+#pragma comment(lib, "user32.lib")
+#pragma comment(lib, "shell32.lib")
+
+#ifndef CALG_SHA_256
+#define CALG_SHA_256 0x0000800c
+#endif
 
 //  structures:
 struct FileInfo {
@@ -22,6 +33,7 @@ struct FileInfo {
     DWORD attributes;
     FILETIME lastWriteTime;
 };
+
 struct DiskInfo {
     string drive;
     string label;
@@ -29,7 +41,7 @@ struct DiskInfo {
     double totalSpace;
 };
 
-
+// --- Global Utilities & Cleanup Helpers ---
 
 ULARGE_INTEGER calculateFolderSize(const string& path) {
     Logger::info("Calculating folder size for: " + path);
@@ -38,38 +50,30 @@ ULARGE_INTEGER calculateFolderSize(const string& path) {
     HANDLE hFind = FindFirstFileA((path + "\\*").c_str(), &findData);
 
     if (hFind != INVALID_HANDLE_VALUE) {
-        Logger::info("Successfully opened directory for scanning: " + path);
         do {
             if (strcmp(findData.cFileName, ".") != 0 && strcmp(findData.cFileName, "..") != 0) {
                 string fullPath = path + "\\" + findData.cFileName;
 
                 if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-                    Logger::info("Processing subdirectory: " + fullPath);
                     ULARGE_INTEGER subFolderSize = calculateFolderSize(fullPath);
                     totalSize.QuadPart += subFolderSize.QuadPart;
                 }
                 else {
-                    // Добавляем размер файла
                     ULARGE_INTEGER fileSize;
                     fileSize.LowPart = findData.nFileSizeLow;
                     fileSize.HighPart = findData.nFileSizeHigh;
                     totalSize.QuadPart += fileSize.QuadPart;
-                    Logger::info("Added file to size calculation: " + fullPath + " (Size: " + to_string(fileSize.QuadPart) + " bytes)");
                 }
             }
         } while (FindNextFileA(hFind, &findData));
         FindClose(hFind);
-        Logger::success("Directory scan completed for: " + path + " (Total size: " + to_string(totalSize.QuadPart) + " bytes)");
-    } else {
-        Logger::error("Failed to open directory for scanning: " + path);
     }
-
     return totalSize;
 }
 
 CleanupResult cleanTempDirectory(const string& path) {
     Logger::info("Starting cleanup of directory: " + path);
-    CleanupResult result; // Initialize result for this path
+    CleanupResult result;
     WIN32_FIND_DATAA findData;
     HANDLE hFind = FindFirstFileA((path + "\\*").c_str(), &findData);
 
@@ -79,13 +83,10 @@ CleanupResult cleanTempDirectory(const string& path) {
                 string fullPath = path + "\\" + findData.cFileName;
 
                 if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-                    // Recursively clean subdirectories
-                    // Add results from recursive call
                     CleanupResult subResult = cleanTempDirectory(fullPath);
                     result.deletedCount += subResult.deletedCount;
                     result.cleanedSize.QuadPart += subResult.cleanedSize.QuadPart;
 
-                    // Try to remove the directory after cleaning
                     if (RemoveDirectoryA(fullPath.c_str())) {
                         SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN | FOREGROUND_INTENSITY);
                         cout << "Removed directory: " << fullPath << endl;
@@ -93,49 +94,60 @@ CleanupResult cleanTempDirectory(const string& path) {
                     }
                 }
                 else {
-                    // Try to delete the file
-                    // Get file size before attempting deletion
                     ULARGE_INTEGER fileSize;
                     fileSize.LowPart = findData.nFileSizeLow;
                     fileSize.HighPart = findData.nFileSizeHigh;
 
-                    cout << "  Attempting to delete file: " << fullPath << endl;
                     if (DeleteFileA(fullPath.c_str())) {
-                        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-                        cout << "  Successfully deleted file: " << fullPath << endl;
-                        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-                        // Increment count and add size for deleted file
                         result.deletedCount++;
                         result.cleanedSize.QuadPart += fileSize.QuadPart;
-                    }
-                    else {
-                        DWORD error = GetLastError();
-                        if (error != ERROR_ACCESS_DENIED && error != ERROR_SHARING_VIOLATION) {
-                            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_INTENSITY);
-                            cout << "Failed to delete: " << fullPath << " (Error: " << error << ")" << endl;
-                            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-                        }
+                        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+                        cout << "Deleted file: " << fullPath << endl;
+                        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
                     }
                 }
             }
         } while (FindNextFileA(hFind, &findData));
         FindClose(hFind);
     }
-
-    return result; // Return the accumulated result
+    return result;
 }
+
+// --- Class FileManager ---
 
 class FileManager {
 private:
+    vector<FileInfo> results;
+
+    static void setColor(WORD color) {
+        HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+        SetConsoleTextAttribute(hConsole, color);
+    }
+
+    static string getProgressBar(double percentage, int width = 15) {
+        if (percentage < 0.0) percentage = 0.0;
+        if (percentage > 100.0) percentage = 100.0;
+        int filled = (int)round((percentage / 100.0) * width);
+        string bar = "[";
+        for (int i = 0; i < width; ++i) {
+            bar += (i < filled) ? "=" : "-";
+        }
+        bar += "] ";
+        ostringstream ss;
+        ss << fixed << setprecision(1) << percentage << "%";
+        return bar + ss.str();
+    }
 
     DiskInfo getDiskInfo(const string& drive) {
         DiskInfo info;
         info.drive = drive;
+        info.freeSpace = 0;
+        info.totalSpace = 0;
 
         ULARGE_INTEGER freeBytesAvailable, totalBytes, totalFreeBytes;
         if (GetDiskFreeSpaceExA(drive.c_str(), &freeBytesAvailable, &totalBytes, &totalFreeBytes)) {
-            info.freeSpace = (double)freeBytesAvailable.QuadPart / (1024 * 1024 * 1024);
-            info.totalSpace = (double)totalBytes.QuadPart / (1024 * 1024 * 1024);
+            info.freeSpace = (double)freeBytesAvailable.QuadPart / (1024.0 * 1024.0 * 1024.0);
+            info.totalSpace = (double)totalBytes.QuadPart / (1024.0 * 1024.0 * 1024.0);
         }
 
         char volumeName[MAX_PATH + 1] = { 0 };
@@ -152,38 +164,6 @@ private:
 
         return info;
     }
-
-    ULARGE_INTEGER calculateFolderSize(const string& path) {
-        ULARGE_INTEGER totalSize = { 0 };
-        WIN32_FIND_DATAA findData;
-        HANDLE hFind = FindFirstFileA((path + "\\*").c_str(), &findData);
-
-        if (hFind != INVALID_HANDLE_VALUE) {
-            do {
-                if (strcmp(findData.cFileName, ".") != 0 && strcmp(findData.cFileName, "..") != 0) {
-                    string fullPath = path + "\\" + findData.cFileName;
-
-                    if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-                        // Рекурсивно подсчитываем размер подпапки
-                        ULARGE_INTEGER subFolderSize = calculateFolderSize(fullPath);
-                        totalSize.QuadPart += subFolderSize.QuadPart;
-                    }
-                    else {
-                        // Добавляем размер файла
-                        ULARGE_INTEGER fileSize;
-                        fileSize.LowPart = findData.nFileSizeLow;
-                        fileSize.HighPart = findData.nFileSizeHigh;
-                        totalSize.QuadPart += fileSize.QuadPart;
-                    }
-                }
-            } while (FindNextFileA(hFind, &findData));
-            FindClose(hFind);
-        }
-
-        return totalSize;
-    }
-
-    vector<FileInfo> results;
 
     vector<DiskInfo> getAvailableDrives() {
         vector<DiskInfo> drives;
@@ -210,7 +190,7 @@ private:
 
         if (hFind != INVALID_HANDLE_VALUE) {
             do {
-                if (strcmp(findData.cFileName, ".") != 0 && strcmp(findData.cFileName, "..") != 0) { // Skip current and parent directory
+                if (strcmp(findData.cFileName, ".") != 0) {
                     FileInfo file;
                     file.name = findData.cFileName;
                     file.fullPath = path + "\\" + findData.cFileName;
@@ -223,8 +203,10 @@ private:
             FindClose(hFind);
         }
 
-        // Sort: directories first, then files, both alphabetically
+        // Sort: directories first, then files alphabetically
         sort(files.begin(), files.end(), [](const FileInfo& a, const FileInfo& b) {
+            if (a.name == "..") return true;
+            if (b.name == "..") return false;
             if (a.isDirectory != b.isDirectory)
                 return a.isDirectory > b.isDirectory;
             return a.name < b.name;
@@ -245,17 +227,18 @@ private:
                     string fullPath = startPath + "\\" + findData.cFileName;
                     bool isDirectory = (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
 
-                    // Проверяем соответствие условиям поиска
                     bool matches = false;
+                    string nameStr = findData.cFileName;
+                    string patStr = searchPattern;
+
                     if (exactMatch) {
-                        matches = (findData.cFileName == searchPattern);
-                    }
-                    else {
-                        string fileName = findData.cFileName;
-                        transform(fileName.begin(), fileName.end(), fileName.begin(), ::tolower);
-                        string pattern = searchPattern;
-                        transform(pattern.begin(), pattern.end(), pattern.begin(), ::tolower);
-                        matches = (fileName.find(pattern) != string::npos);
+                        matches = (nameStr == patStr);
+                    } else {
+                        string nameLower = nameStr;
+                        string patLower = patStr;
+                        transform(nameLower.begin(), nameLower.end(), nameLower.begin(), ::tolower);
+                        transform(patLower.begin(), patLower.end(), patLower.begin(), ::tolower);
+                        matches = (nameLower.find(patLower) != string::npos);
                     }
 
                     if (matches) {
@@ -270,104 +253,526 @@ private:
                         }
                     }
 
-                    // Рекурсивно ищем в подпапках
                     if (isDirectory) {
-                        try {
-                            vector<FileInfo> subResults = searchFiles(fullPath, searchPattern, foldersOnly, filesOnly, exactMatch);
-                            results.insert(results.end(), subResults.begin(), subResults.end());
-                        }
-                        catch (...) {
-                            // Пропускаем папки, к которым нет доступа
-                            continue;
-                        }
+                        vector<FileInfo> subResults = searchFiles(fullPath, searchPattern, foldersOnly, filesOnly, exactMatch);
+                        results.insert(results.end(), subResults.begin(), subResults.end());
                     }
                 }
             } while (FindNextFileA(hFind, &findData));
             FindClose(hFind);
         }
-
         return results;
     }
 
-    string getFileType(const FileInfo& file) {
-        if (file.isDirectory) return "Directory";
+    // --- Helper Utilities ---
 
-        string extension = file.name.substr(file.name.find_last_of(".") + 1);
-        transform(extension.begin(), extension.end(), extension.begin(), ::toupper);
-
-        if (extension == "EXE") return "Application";
-        if (extension == "DLL") return "Dynamic Link Library";
-        if (extension == "SYS") return "System File";
-        if (extension == "TXT") return "Text Document";
-        if (extension == "PDF") return "PDF Document";
-        if (extension == "DOC" || extension == "DOCX") return "Word Document";
-        if (extension == "XLS" || extension == "XLSX") return "Excel Document";
-        if (extension == "JPG" || extension == "JPEG" || extension == "PNG") return "Image";
-        if (extension == "MP3" || extension == "WAV") return "Audio";
-        if (extension == "MP4" || extension == "AVI") return "Video";
-
-        return extension + " File";
+    static WORD getFileColor(const FileInfo& file) {
+        if (file.attributes & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM)) {
+            return FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE; // Dim Gray
+        }
+        if (file.isDirectory) {
+            return FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY; // Bright Cyan
+        }
+        
+        string ext = "";
+        size_t dotPos = file.name.find_last_of('.');
+        if (dotPos != string::npos) {
+            ext = file.name.substr(dotPos);
+            transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+        }
+        
+        if (ext == ".exe" || ext == ".bat" || ext == ".cmd" || ext == ".ps1" || ext == ".msi") {
+            return FOREGROUND_GREEN | FOREGROUND_INTENSITY; // Bright Green
+        }
+        if (ext == ".zip" || ext == ".rar" || ext == ".7z" || ext == ".tar" || ext == ".gz" || ext == ".iso") {
+            return FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY; // Yellow
+        }
+        if (ext == ".txt" || ext == ".log" || ext == ".ini" || ext == ".json" || ext == ".cpp" || ext == ".h" || ext == ".xml") {
+            return FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY; // Bright White
+        }
+        
+        return FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
     }
 
-    void showSearchResults(const vector<FileInfo>& results, const string& searchPattern) {
-        int selectedIndex = 0;
-        bool running = true;
+    static string formatFileSize(ULARGE_INTEGER size) {
+        return formatFileSize(size.QuadPart);
+    }
 
-        while (running) {
-            system("cls");
-            cout << "Search Results for: " << searchPattern << endl;
-            cout << "Found " << results.size() << " items" << endl;
-            cout << "Use Up/Down arrows to navigate, Enter to select, 'q' to quit" << endl << endl;
+    static string formatFileSize(ULONGLONG size) {
+        const char* units[] = { "B", "KB", "MB", "GB", "TB" };
+        int unit = 0;
+        double fileSize = (double)size;
 
-            CONSOLE_SCREEN_BUFFER_INFO csbi;
-            GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-            int windowHeight = csbi.srWindow.Bottom - csbi.srWindow.Top - 6;
-            int startIndex = max(0, selectedIndex - windowHeight / 2);
-            if (startIndex + windowHeight >= results.size()) {
-                startIndex = max(0, (int)results.size() - windowHeight);
-            }
-
-            for (int i = startIndex; i < min(startIndex + windowHeight, (int)results.size()); i++) {
-                if (i == selectedIndex) {
-                    cout << ">";
-                }
-                else {
-                    cout << " ";
-                }
-                cout << (results[i].isDirectory ? "[DIR] " : "[FILE] ") << results[i].fullPath << endl;
-            }
-
-            int key = _getch();
-            if (g_ctrlCPressed) { // Check for Ctrl+C
-                g_ctrlCPressed = FALSE; // Reset the flag
-                running = false; // Exit this menu loop
-                continue; // Skip the rest of the loop iteration
-            }
-            if (key == 224) {
-                key = _getch();
-                switch (key) {
-                    case 72: // Up arrow
-                        selectedIndex = (selectedIndex - 1 + results.size()) % results.size();
-                        break;
-                    case 80: // Down arrow
-                        selectedIndex = (selectedIndex + 1) % results.size();
-                        break;
-                }
-            }
-            else if (key == 13) { // Enter
-                if (selectedIndex < results.size()) {
-                    if (results[selectedIndex].isDirectory) {
-                        browseDirectory(results[selectedIndex].fullPath);
-                    }
-                    else {
-                        ShellExecuteA(NULL, "open", results[selectedIndex].fullPath.c_str(), NULL, NULL, SW_SHOW);
-                    }
-                }
-            }
-            else if (key == 'q' || key == 'Q') {
-                running = false;
-            }
+        while (fileSize >= 1024 && unit < 4) {
+            fileSize /= 1024;
+            unit++;
         }
+
+        stringstream ss;
+        ss << fixed << setprecision(2) << fileSize << " " << units[unit];
+        return ss.str();
+    }
+
+    static string formatFileTime(const FILETIME& ft) {
+        SYSTEMTIME st;
+        FileTimeToSystemTime(&ft, &st);
+
+        tm timeInfo = {};
+        timeInfo.tm_year = st.wYear - 1900;
+        timeInfo.tm_mon = st.wMonth - 1;
+        timeInfo.tm_mday = st.wDay;
+        timeInfo.tm_hour = st.wHour;
+        timeInfo.tm_min = st.wMinute;
+        timeInfo.tm_sec = st.wSecond;
+
+        char buffer[100];
+        strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &timeInfo);
+        return string(buffer);
+    }
+
+    static string getFileType(const FileInfo& file) {
+        if (file.isDirectory) return "Folder";
+        size_t dotPos = file.name.find_last_of('.');
+        if (dotPos != string::npos) {
+            return file.name.substr(dotPos + 1) + " File";
+        }
+        return "File";
+    }
+
+    // --- Core Operations: Copy, Move, Delete, Rename, Hash, Attributes, Preview ---
+
+    static bool recursiveCopyHelper(const string& srcPath, const string& destPath) {
+        DWORD dwAttrs = GetFileAttributesA(srcPath.c_str());
+        if (dwAttrs == INVALID_FILE_ATTRIBUTES) return false;
+
+        if (dwAttrs & FILE_ATTRIBUTE_DIRECTORY) {
+            CreateDirectoryA(destPath.c_str(), NULL);
+            WIN32_FIND_DATAA findData;
+            HANDLE hFind = FindFirstFileA((srcPath + "\\*").c_str(), &findData);
+            if (hFind != INVALID_HANDLE_VALUE) {
+                do {
+                    if (strcmp(findData.cFileName, ".") != 0 && strcmp(findData.cFileName, "..") != 0) {
+                        string subSrc = srcPath + "\\" + findData.cFileName;
+                        string subDest = destPath + "\\" + findData.cFileName;
+                        recursiveCopyHelper(subSrc, subDest);
+                    }
+                } while (FindNextFileA(hFind, &findData));
+                FindClose(hFind);
+            }
+            return true;
+        } else {
+            return (CopyFileA(srcPath.c_str(), destPath.c_str(), FALSE) != 0);
+        }
+    }
+
+    static void recursiveDeleteHelper(const string& path) {
+        WIN32_FIND_DATAA findData;
+        HANDLE hFind = FindFirstFileA((path + "\\*").c_str(), &findData);
+
+        if (hFind != INVALID_HANDLE_VALUE) {
+            do {
+                if (strcmp(findData.cFileName, ".") != 0 && strcmp(findData.cFileName, "..") != 0) {
+                    string fullPath = path + "\\" + findData.cFileName;
+                    if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+                        recursiveDeleteHelper(fullPath);
+                        RemoveDirectoryA(fullPath.c_str());
+                    } else {
+                        DeleteFileA(fullPath.c_str());
+                    }
+                }
+            } while (FindNextFileA(hFind, &findData));
+            FindClose(hFind);
+        }
+    }
+
+    void copyItem(const string& srcPath) {
+        system("cls");
+        cout << "Copy Item: " << srcPath << endl;
+        cout << "Enter Destination Folder Path: ";
+        string destFolder;
+        getline(cin, destFolder);
+
+        if (destFolder.empty()) {
+            cout << "Destination folder path cannot be empty!\n";
+            cout << "Press any key to continue...";
+            _getch();
+            return;
+        }
+
+        size_t lastSlash = srcPath.find_last_of("\\");
+        string itemName = (lastSlash != string::npos) ? srcPath.substr(lastSlash + 1) : srcPath;
+        string targetPath = destFolder + "\\" + itemName;
+
+        Logger::info("Copying " + srcPath + " to " + targetPath);
+        if (recursiveCopyHelper(srcPath, targetPath)) {
+            setColor(FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+            cout << "\n[+] Item copied successfully to: " << targetPath << endl;
+        } else {
+            setColor(FOREGROUND_RED | FOREGROUND_INTENSITY);
+            cout << "\n[-] Failed to copy item. Error: " << GetLastError() << endl;
+        }
+        setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        cout << "Press any key to continue...";
+        _getch();
+    }
+
+    void moveItem(const string& srcPath) {
+        system("cls");
+        cout << "Move Item: " << srcPath << endl;
+        cout << "Enter Destination Folder Path: ";
+        string destFolder;
+        getline(cin, destFolder);
+
+        if (destFolder.empty()) {
+            cout << "Destination folder path cannot be empty!\n";
+            cout << "Press any key to continue...";
+            _getch();
+            return;
+        }
+
+        size_t lastSlash = srcPath.find_last_of("\\");
+        string itemName = (lastSlash != string::npos) ? srcPath.substr(lastSlash + 1) : srcPath;
+        string targetPath = destFolder + "\\" + itemName;
+
+        Logger::info("Moving " + srcPath + " to " + targetPath);
+        if (MoveFileExA(srcPath.c_str(), targetPath.c_str(), MOVEFILE_COPY_ALLOWED | MOVEFILE_REPLACE_EXISTING)) {
+            setColor(FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+            cout << "\n[+] Item moved successfully to: " << targetPath << endl;
+        } else {
+            setColor(FOREGROUND_RED | FOREGROUND_INTENSITY);
+            cout << "\n[-] Failed to move item. Error: " << GetLastError() << endl;
+        }
+        setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        cout << "Press any key to continue...";
+        _getch();
+    }
+
+    void deleteFile(const string& path) {
+        system("cls");
+        cout << "Are you sure you want to delete: " << path << "? (Y/N): ";
+        char choice = _getch();
+        cout << endl;
+
+        if (choice == 'Y' || choice == 'y') {
+            DWORD attributes = GetFileAttributesA(path.c_str());
+            if (attributes != INVALID_FILE_ATTRIBUTES) {
+                if (attributes & FILE_ATTRIBUTE_DIRECTORY) {
+                    recursiveDeleteHelper(path);
+                    if (RemoveDirectoryA(path.c_str())) {
+                        setColor(FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+                        cout << "Directory deleted successfully!" << endl;
+                    } else {
+                        setColor(FOREGROUND_RED | FOREGROUND_INTENSITY);
+                        cout << "Failed to delete directory. Error: " << GetLastError() << endl;
+                    }
+                } else {
+                    if (DeleteFileA(path.c_str())) {
+                        setColor(FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+                        cout << "File deleted successfully!" << endl;
+                    } else {
+                        setColor(FOREGROUND_RED | FOREGROUND_INTENSITY);
+                        cout << "Failed to delete file. Error: " << GetLastError() << endl;
+                    }
+                }
+            } else {
+                setColor(FOREGROUND_RED | FOREGROUND_INTENSITY);
+                cout << "Item not found: " << path << endl;
+            }
+            setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        }
+        cout << "Press any key to continue...";
+        _getch();
+    }
+
+    void renameFile(const string& oldPath) {
+        system("cls");
+        cout << "Rename: " << oldPath << endl;
+
+        DWORD attributes = GetFileAttributesA(oldPath.c_str());
+        if (attributes == INVALID_FILE_ATTRIBUTES) {
+            cout << "Error: Item not found!" << endl;
+            cout << "Press any key to continue...";
+            _getch();
+            return;
+        }
+
+        cout << "Enter new name: ";
+        string newName;
+        getline(cin, newName);
+
+        if (newName.empty()) {
+            cout << "Error: New name cannot be empty!" << endl;
+            cout << "Press any key to continue...";
+            _getch();
+            return;
+        }
+
+        string newPath = oldPath.substr(0, oldPath.find_last_of("\\") + 1) + newName;
+
+        if (GetFileAttributesA(newPath.c_str()) != INVALID_FILE_ATTRIBUTES) {
+            cout << "Error: An item with this name already exists!" << endl;
+            cout << "Press any key to continue...";
+            _getch();
+            return;
+        }
+
+        if (MoveFileA(oldPath.c_str(), newPath.c_str())) {
+            setColor(FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+            cout << "Renamed successfully!" << endl;
+        } else {
+            setColor(FOREGROUND_RED | FOREGROUND_INTENSITY);
+            cout << "Failed to rename. Error: " << GetLastError() << endl;
+        }
+        setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+
+        cout << "Press any key to continue...";
+        _getch();
+    }
+
+    static string calculateFileHash(const string& filePath, ALG_ID algId) {
+        HANDLE hFile = CreateFileA(filePath.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+        if (hFile == INVALID_HANDLE_VALUE) return "Failed to open file";
+
+        HCRYPTPROV hProv = 0;
+        HCRYPTHASH hHash = 0;
+        if (!CryptAcquireContextA(&hProv, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT)) {
+            CloseHandle(hFile);
+            return "CryptAcquireContext failed";
+        }
+
+        if (!CryptCreateHash(hProv, algId, 0, 0, &hHash)) {
+            CryptReleaseContext(hProv, 0);
+            CloseHandle(hFile);
+            return "CryptCreateHash failed";
+        }
+
+        BYTE buffer[8192];
+        DWORD bytesRead = 0;
+        while (ReadFile(hFile, buffer, sizeof(buffer), &bytesRead, NULL) && bytesRead > 0) {
+            CryptHashData(hHash, buffer, bytesRead, 0);
+        }
+
+        BYTE hashVal[64];
+        DWORD hashLen = sizeof(hashVal);
+        string result = "";
+        if (CryptGetHashParam(hHash, HP_HASHVAL, hashVal, &hashLen, 0)) {
+            ostringstream ss;
+            for (DWORD i = 0; i < hashLen; i++) {
+                ss << hex << uppercase << setw(2) << setfill('0') << (int)hashVal[i];
+            }
+            result = ss.str();
+        } else {
+            result = "Failed to compute hash";
+        }
+
+        CryptDestroyHash(hHash);
+        CryptReleaseContext(hProv, 0);
+        CloseHandle(hFile);
+        return result;
+    }
+
+    void showFileHashes(const string& filePath) {
+        system("cls");
+        setColor(FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+        cout << "================================================================================\n";
+        cout << "                          FILE CHECKSUM / HASH TOOL                             \n";
+        cout << "================================================================================\n";
+        setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+        cout << "File: " << filePath << "\n\n";
+
+        cout << "Calculating MD5 checksum...\n";
+        string md5 = calculateFileHash(filePath, CALG_MD5);
+        setColor(FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+        cout << "  MD5:    " << md5 << "\n\n";
+
+        setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+        cout << "Calculating SHA-256 checksum...\n";
+        string sha256 = calculateFileHash(filePath, CALG_SHA_256);
+        setColor(FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+        cout << "  SHA256: " << sha256 << "\n\n";
+
+        setColor(FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+        cout << "================================================================================\n";
+        setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        cout << "Press any key to continue...";
+        _getch();
+    }
+
+    void previewTextFile(const string& filePath) {
+        system("cls");
+        setColor(FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+        cout << "================================================================================\n";
+        cout << "  QUICK TEXT PREVIEW: " << filePath << "\n";
+        cout << "================================================================================\n";
+        setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+
+        ifstream inFile(filePath.c_str(), ios::binary);
+        if (!inFile.is_open()) {
+            cout << "Failed to open file for text reading.\n";
+            cout << "Press any key to continue...";
+            _getch();
+            return;
+        }
+
+        string line;
+        int lineCount = 0;
+        while (getline(inFile, line) && lineCount < 200) {
+            lineCount++;
+            setColor(FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+            cout << right << setw(4) << lineCount << " | ";
+            setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+            cout << line << "\n";
+        }
+
+        if (!inFile.eof() && lineCount >= 200) {
+            setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+            cout << "\n[... Preview truncated at 200 lines ...]\n";
+        }
+
+        inFile.close();
+        setColor(FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+        cout << "================================================================================\n";
+        setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        cout << "Press any key to return...";
+        _getch();
+    }
+
+    void manageFileAttributes(const string& path) {
+        system("cls");
+        DWORD attrs = GetFileAttributesA(path.c_str());
+        if (attrs == INVALID_FILE_ATTRIBUTES) {
+            cout << "Item not found or inaccessible.\n";
+            cout << "Press any key to return...";
+            _getch();
+            return;
+        }
+
+        setColor(FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+        cout << "==================================================\n";
+        cout << "        FILE ATTRIBUTES MANAGER: " << path << "\n";
+        cout << "==================================================\n";
+        setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+        cout << "Current Attributes:\n";
+        cout << "  [ " << ((attrs & FILE_ATTRIBUTE_READONLY) ? "X" : " ") << " ] Read-Only\n";
+        cout << "  [ " << ((attrs & FILE_ATTRIBUTE_HIDDEN) ? "X" : " ") << " ] Hidden\n";
+        cout << "  [ " << ((attrs & FILE_ATTRIBUTE_SYSTEM) ? "X" : " ") << " ] System\n\n";
+
+        cout << "Actions:\n";
+        cout << "  1. Toggle Read-Only\n";
+        cout << "  2. Toggle Hidden\n";
+        cout << "  3. Toggle System\n";
+        cout << "  4. Back\n\n";
+        cout << "Choice (1-4): ";
+
+        char choice = _getch();
+        if (choice == '1') {
+            if (attrs & FILE_ATTRIBUTE_READONLY) attrs &= ~FILE_ATTRIBUTE_READONLY;
+            else attrs |= FILE_ATTRIBUTE_READONLY;
+            SetFileAttributesA(path.c_str(), attrs);
+            cout << "\n[+] Read-Only attribute updated!\n";
+        } else if (choice == '2') {
+            if (attrs & FILE_ATTRIBUTE_HIDDEN) attrs &= ~FILE_ATTRIBUTE_HIDDEN;
+            else attrs |= FILE_ATTRIBUTE_HIDDEN;
+            SetFileAttributesA(path.c_str(), attrs);
+            cout << "\n[+] Hidden attribute updated!\n";
+        } else if (choice == '3') {
+            if (attrs & FILE_ATTRIBUTE_SYSTEM) attrs &= ~FILE_ATTRIBUTE_SYSTEM;
+            else attrs |= FILE_ATTRIBUTE_SYSTEM;
+            SetFileAttributesA(path.c_str(), attrs);
+            cout << "\n[+] System attribute updated!\n";
+        }
+        cout << "Press any key to continue...";
+        _getch();
+    }
+
+    void createNewFolder(const string& currentPath) {
+        system("cls");
+        cout << "Create new folder in: " << currentPath << endl;
+        cout << "Enter folder name: ";
+        string folderName;
+        getline(cin, folderName);
+
+        if (folderName.empty()) return;
+
+        string newPath = currentPath + "\\" + folderName;
+        if (CreateDirectoryA(newPath.c_str(), NULL)) {
+            setColor(FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+            cout << "Folder created successfully!" << endl;
+        } else {
+            setColor(FOREGROUND_RED | FOREGROUND_INTENSITY);
+            cout << "Failed to create folder. Error: " << GetLastError() << endl;
+        }
+        setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        cout << "Press any key to continue...";
+        _getch();
+    }
+
+    void createNewFile(const string& fullPath) {
+        system("cls");
+        cout << "Create new file in: " << fullPath << endl;
+        cout << "Enter file name: ";
+        string fileName;
+        getline(cin, fileName);
+
+        if (fileName.empty()) return;
+
+        string targetPath = fullPath + "\\" + fileName;
+        HANDLE hFile = CreateFileA(targetPath.c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+        if (hFile != INVALID_HANDLE_VALUE) {
+            CloseHandle(hFile);
+            setColor(FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+            cout << "File created successfully!" << endl;
+        } else {
+            setColor(FOREGROUND_RED | FOREGROUND_INTENSITY);
+            cout << "Failed to create file. Error: " << GetLastError() << endl;
+        }
+        setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        cout << "Press any key to continue...";
+        _getch();
+    }
+
+    void showFileManagerHelp() {
+        system("cls");
+        setColor(FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+        cout << "================================================================================\n";
+        cout << "                           FILE MANAGER HELP & GUIDELINES                       \n";
+        cout << "================================================================================\n";
+        setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+        cout << "  Navigation & Hotkeys:\n";
+        cout << "    Up / Down Arrows  - Navigate files and directories\n";
+        cout << "    Enter             - Open directory or execute file\n";
+        cout << "    Left Arrow        - Open File Management Options Menu\n";
+        cout << "    Right Arrow       - Show Detailed File/Folder Information\n";
+        cout << "    P / p             - Quick Text File Preview (first 200 lines)\n";
+        cout << "    O / o             - Additional Operations (Copy, Move, Delete, Rename)\n";
+        cout << "    S / s             - Search Files across directories / all drives\n";
+        cout << "    4                 - Refresh file and directory list\n";
+        cout << "    b / B             - Go up one directory level\n";
+        cout << "    h / H             - Show this help menu\n";
+        cout << "    q / Q / Esc       - Exit / Return to previous menu\n\n";
+
+        cout << "  File Color Indicators:\n";
+        setColor(FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+        cout << "    [Folder]         - Bright Cyan\n";
+        setColor(FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+        cout << "    Executables      - Bright Green (.exe, .bat, .cmd, .ps1)\n";
+        setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+        cout << "    Archives         - Bright Yellow (.zip, .rar, .7z, .iso)\n";
+        setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+        cout << "    Documents/Code   - Bright White (.txt, .log, .cpp, .h, .json)\n";
+        setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        cout << "    System / Hidden  - Dim Gray\n\n";
+
+        cout << "  Advanced File Tools:\n";
+        cout << "    - MD5 & SHA-256 Checksum Calculator\n";
+        cout << "    - File Attributes Manager (Read-Only, Hidden, System)\n";
+        cout << "    - Copy Full Path to Clipboard\n";
+        cout << "    - Open Location in Windows Explorer\n";
+        setColor(FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+        cout << "================================================================================\n";
+        setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        cout << "Press any key to return...";
+        _getch();
     }
 
     void showSearchHelp() {
@@ -383,7 +788,6 @@ private:
         cout << "|  FOLDER::Folder                                  |" << endl;
         cout << "|  FILE::filename.txt                              |" << endl;
         cout << "|  SS::ExactFileName.exe                           |" << endl;
-        cout << "|  partialname                                      |" << endl;
         cout << "|                                                   |" << endl;
         cout << "|---------------------------------------------------|" << endl;
         cout << "\n     Press Enter to continue...";
@@ -399,8 +803,7 @@ private:
         if (searchPattern == "HELP::") {
             showSearchHelp();
             return;
-        }
-        else if (searchPattern == "q") { return; }
+        } else if (searchPattern == "q") { return; }
 
         bool foldersOnly = false;
         bool filesOnly = false;
@@ -410,12 +813,10 @@ private:
         if (searchPattern.find("FOLDER::") == 0) {
             foldersOnly = true;
             searchPattern = searchPattern.substr(8);
-        }
-        else if (searchPattern.find("FILE::") == 0) {
+        } else if (searchPattern.find("FILE::") == 0) {
             filesOnly = true;
             searchPattern = searchPattern.substr(6);
-        }
-        else if (searchPattern.find("SS::") == 0) {
+        } else if (searchPattern.find("SS::") == 0) {
             exactMatch = true;
             searchPattern = searchPattern.substr(4);
             searchAllDrives = true;
@@ -428,20 +829,15 @@ private:
             return;
         }
 
-
-
+        results.clear();
         if (searchAllDrives) {
             cout << "Searching across all drives... This may take a while." << endl;
             vector<DiskInfo> drives = getAvailableDrives();
-
             for (const auto& drive : drives) {
-                cout << "Searching in " << drive.drive << "..." << endl;
                 try {
                     vector<FileInfo> driveResults = searchFiles(drive.drive, searchPattern, foldersOnly, filesOnly, exactMatch);
                     results.insert(results.end(), driveResults.begin(), driveResults.end());
-                }
-                catch (...) {
-                    cout << "Error accessing " << drive.drive << ", skipping..." << endl;
+                } catch (...) {
                     continue;
                 }
             }
@@ -460,381 +856,183 @@ private:
         showSearchResults(results, searchPattern);
     }
 
-    void createNewFile(const string& fullPath) {
-        system("cls");
-        cout << "Create new file: " << fullPath << endl;
-
-        HANDLE hFile = CreateFileA(fullPath.c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-        if (hFile != INVALID_HANDLE_VALUE) {
-            CloseHandle(hFile);
-            cout << "File created successfully!" << endl;
-        }
-        else {
-            cout << "Failed to create file. Error: " << GetLastError() << endl;
-        }
-        cout << "Press any key to continue...";
-        _getch();
-    }
-
-    void showFileManagerHelp() {
-        system("cls");
-        // Set console output to use UTF-8L
-        SetConsoleOutputCP(CP_UTF8);
-        // Enable virtual terminal processing
-        HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-        DWORD dwMode = 0;
-        GetConsoleMode(hOut, &dwMode);
-        SetConsoleMode(hOut, dwMode | 0x0004);
-
-        cout << "|-------------------------------------------------------------------------|" << endl;
-        cout << "|                         Help:                                           |" << endl;
-        cout << "|-------------------------------------------------------------------------|" << endl;
-        cout << "| Navigation:                                                              |" << endl;
-        cout << "| ↑ (Up arrow) - Move up                                                  |" << endl;
-        cout << "| ↓ (Down arrow) - Move down                                              |" << endl;
-        cout << "| Enter - Select                                                          |" << endl;
-        cout << "| → (Right arrow) - Show detailed information                             |" << endl;
-        cout << "| ← (Left arrow) - Disk management                                        |" << endl;
-        cout << "|-------------------------------------------------------------------------|" << endl;
-        cout << "| General commands:                                                       |" << endl;
-        cout << "| 4 - Refresh file/drive list                                             |" << endl;
-        cout << "| q - Quit                                                                |" << endl;
-        cout << "| h - Show help                                                           |" << endl;
-        cout << "| S - Search files on computer                                            |" << endl;
-        cout << "| O - Additional operations                                               |" << endl;
-        cout << "|-------------------------------------------------------------------------|" << endl;
-        cout << "| In file manager:                                                        |" << endl;
-        cout << "| b - Go back                                                             |" << endl;
-        cout << "| OTHER - Additional operations                                           |" << endl;
-        cout << "|-------------------------------------------------------------------------|" << endl;
-        cout << "| When editing a file:                                                    |" << endl;
-        cout << "| Ctrl + S - Save                                                         |" << endl;
-        cout << "| Ctrl + Q - Exit without saving                                          |" << endl;
-        cout << "| Ctrl + Alt + Q - Save and exit                                          |" << endl;
-        cout << "|-------------------------------------------------------------------------|" << endl;
-        cout << "\nPress any key to return...";
-        _getch();
-    }
-
-    void showDiskManagement(const DiskInfo& disk) {
-        vector<string> options = {
-                "Check Disk",
-                "Defragment",
-                "Properties",
-                "Back"
-        };
+    void showSearchResults(vector<FileInfo>& resultsList, const string& pattern) {
         int selectedIndex = 0;
         bool running = true;
 
         while (running) {
             system("cls");
-            cout << "Disk Management: " << disk.drive << endl << endl;
+            setColor(FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+            cout << "Search Results for '" << pattern << "' (Found " << resultsList.size() << " items):\n\n";
+            setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 
-            HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-            for (int i = 0; i < options.size(); i++) {
-                bool isSel = (i == selectedIndex);
-                if (isSel) SetConsoleTextAttribute(hConsole, BACKGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
-                cout << (isSel ? "> " : "  ") << options[i] << endl;
-                if (isSel) SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+            for (size_t i = 0; i < resultsList.size() && i < 30; i++) {
+                bool isSel = (i == (size_t)selectedIndex);
+                if (isSel) setColor(BACKGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+                else setColor(getFileColor(resultsList[i]));
+
+                cout << (isSel ? "> " : "  ") << setw(35) << left << resultsList[i].name << " " << resultsList[i].fullPath << endl;
+                setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
             }
 
             int key = _getch();
             if (key == 224) {
                 key = _getch();
                 switch (key) {
-                    case 72: // Up arrow
-                        selectedIndex = (selectedIndex - 1 + options.size()) % options.size();
+                    case 72: // Up
+                        selectedIndex = (selectedIndex - 1 + resultsList.size()) % resultsList.size();
                         break;
-                    case 80: // Down arrow
-                        selectedIndex = (selectedIndex + 1) % options.size();
-                        break;
-                }
-            }
-            else if (key == 13) { // Enter
-                switch (selectedIndex) {
-                    case 0: // Check Disk
-                        system(("chkdsk " + disk.drive + " /f").c_str());
-                        cout << "\nPress any key to continue...";
-                        _getch();
-                        break;
-                    case 1: // Defragment
-                        system(("defrag " + disk.drive + " /A").c_str());
-                        cout << "\nPress any key to continue...";
-                        _getch();
-                        break;
-                    case 2: // Properties
-                        system("cls");
-                        cout << "Disk Properties: " << disk.drive << endl << endl;
-                        cout << "Label: " << disk.label << endl;
-                        cout << "Total Space: " << fixed << setprecision(2) << disk.totalSpace << " GB" << endl;
-                        cout << "Free Space: " << fixed << setprecision(2) << disk.freeSpace << " GB" << endl;
-                        cout << "Used Space: " << fixed << setprecision(2) << (disk.totalSpace - disk.freeSpace) << " GB" << endl;
-                        cout << "\nPress any key to continue...";
-                        _getch();
-                        break;
-                    case 3: // Back
-                        running = false;
+                    case 80: // Down
+                        selectedIndex = (selectedIndex + 1) % resultsList.size();
                         break;
                 }
-            }
-            else if (key == 27) { // Escape
+            } else if (key == 13) { // Enter
+                if (selectedIndex < (int)resultsList.size()) {
+                    if (resultsList[selectedIndex].isDirectory) {
+                        browseDirectory(resultsList[selectedIndex].fullPath);
+                    } else {
+                        ShellExecuteA(NULL, "open", resultsList[selectedIndex].fullPath.c_str(), NULL, NULL, SW_SHOW);
+                    }
+                }
+            } else if (key == 'q' || key == 'Q') {
                 running = false;
             }
         }
     }
 
-    void recursiveDeleteHelper(const string& path) {
-        // Рекурсивное удаление директории без подтверждения
-        WIN32_FIND_DATAA findData;
-        HANDLE hFind = FindFirstFileA((path + "\\*").c_str(), &findData);
-
-        if (hFind != INVALID_HANDLE_VALUE) {
-            do {
-                if (strcmp(findData.cFileName, ".") != 0 && strcmp(findData.cFileName, "..") != 0) {
-                    string fullPath = path + "\\" + findData.cFileName;
-                    cout << "  Processing: " << fullPath << endl;
-                    if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-                        recursiveDeleteHelper(fullPath); // Рекурсивно удаляем поддиректории
-                        cout << "Attempting to remove directory: " << fullPath << endl;
-                        if (RemoveDirectoryA(fullPath.c_str())) {
-                            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-                            cout << "Successfully removed directory: " << fullPath << endl;
-                            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-                        } else {
-                            DWORD error = GetLastError();
-                            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_INTENSITY);
-                            cout << "Failed to remove directory: " << fullPath << ". Error: " << error << endl;
-                            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-                        }
-                    } else { // It's a file
-                        cout << "  Attempting to delete file: " << fullPath << endl;
-                        if (DeleteFileA(fullPath.c_str())) {
-                            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-                            cout << "  Successfully deleted file: " << fullPath << endl;
-                            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-                        } else {
-                            DWORD error = GetLastError();
-                            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_INTENSITY);
-                            cout << "  Failed to delete file: " << fullPath << ". Error: " << error << endl;
-                            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-                        }
-                    }
-                }
-            } while (FindNextFileA(hFind, &findData));
-            FindClose(hFind);
-        }
-    }
-
-    string formatFileSize(DWORD size) {
-        const char* units[] = { "B", "KB", "MB", "GB", "TB" };
-        int unit = 0;
-        double fileSize = (double)size;
-
-        while (fileSize >= 1024 && unit < 4) {
-            fileSize /= 1024;
-            unit++;
-        }
-
-        stringstream ss;
-        ss << fixed << setprecision(2) << fileSize << " " << units[unit];
-        return ss.str();
-    }
-
-    string formatFileTime(const FILETIME& ft) {
-        SYSTEMTIME st;
-        FileTimeToSystemTime(&ft, &st);
-
-        tm timeInfo = {};
-        timeInfo.tm_year = st.wYear - 1900;
-        timeInfo.tm_mon = st.wMonth - 1;
-        timeInfo.tm_mday = st.wDay;
-        timeInfo.tm_hour = st.wHour;
-        timeInfo.tm_min = st.wMinute;
-        timeInfo.tm_sec = st.wSecond;
-        timeInfo.tm_isdst = -1;
-
-        char buffer[100];
-        strftime(buffer, sizeof(buffer), "%a %b %d %H:%M:%S %Y", &timeInfo);
-        return string(buffer);
-    }
-
-    void deleteFile(const string& path) {
-        system("cls");
-        cout << "Are you sure you want to delete: " << path << "? (Y/N): ";
-        char choice = _getch();
-        cout << endl;
-
-        if (choice == 'Y' || choice == 'y') {
-            DWORD attributes = GetFileAttributesA(path.c_str());
-            if (attributes != INVALID_FILE_ATTRIBUTES) {
-                if (attributes & FILE_ATTRIBUTE_DIRECTORY) {
-                    cout << "Attempting to delete directory: " << path << endl;
-                    recursiveDeleteHelper(path);
-                    // After deleting contents, attempt to remove the directory itself
-                    cout << "Attempting to remove directory: " << path << endl;
-                    if (RemoveDirectoryA(path.c_str())) {
-                        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-                        cout << "Directory deleted successfully!" << endl;
-                        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-                    } else {
-                        DWORD error = GetLastError();
-                        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_INTENSITY);
-                        cout << "Failed to delete directory: " << path << ". Error: " << error << endl;
-                        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-                    }
-                } else { // It's a file
-                    cout << "Attempting to delete file: " << path << endl;
-                    if (DeleteFileA(path.c_str())) {
-                        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-                        cout << "File deleted successfully!" << endl;
-                        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-                    } else {
-                        DWORD error = GetLastError();
-                        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_INTENSITY);
-                        cout << "Failed to delete file: " << path << ". Error: " << error << endl;
-                        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-                    }
-                }
-            } else {
-                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_INTENSITY);
-                cout << "Item not found: " << path << endl;
-                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-            }
-        }
-        cout << "Press any key to continue...";
-        _getch();
-    }
-
-    void createNewFolder(const string& currentPath) {
-        system("cls");
-        cout << "Create new folder in: " << currentPath << endl;
-        cout << "Enter folder name: ";
-        string folderName;
-        getline(cin, folderName);
-
-        string newPath = currentPath + "\\" + folderName;
-        if (CreateDirectoryA(newPath.c_str(), NULL)) {
-            cout << "Folder created successfully!" << endl;
-        }
-        else {
-            cout << "Failed to create folder. Error: " << GetLastError() << endl;
-        }
-        cout << "Press any key to continue...";
-        _getch();
-    }
-
     void showAdditionalOperations(const string& currentPath) {
         vector<string> options = {
-                "Create New Folder",
-                "Create New File",
-                "===================",
-                "Copy Selected",
-                "Move Selected",
-                "Delete Selected",
-                "Rename Selected",
-                "===================",
-                "Back"
+            "Create New Folder",
+            "Create New File",
+            "===================",
+            "Copy Item",
+            "Move Item",
+            "Delete Item",
+            "Rename Item",
+            "===================",
+            "Back"
         };
         int selectedIndex = 0;
         bool running = true;
 
         while (running) {
             system("cls");
-            cout << "Additional Operations" << endl << endl;
+            setColor(FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+            cout << "ADDITIONAL FILE OPERATIONS (" << currentPath << ")\n\n";
+            setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 
-            HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-            for (int i = 0; i < options.size(); i++) {
-                // Skip separators when selecting
+            for (size_t i = 0; i < options.size(); i++) {
                 if (options[i] == "===================") {
+                    setColor(FOREGROUND_BLUE | FOREGROUND_INTENSITY);
                     cout << " " << options[i] << endl;
+                    setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
                     continue;
                 }
 
-                bool isSel = (i == selectedIndex);
-                if (isSel) SetConsoleTextAttribute(hConsole, BACKGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
-                cout << (isSel ? ">" : "  ") << options[i] << endl;
-                if (isSel) SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+                bool isSel = (i == (size_t)selectedIndex);
+                if (isSel) setColor(BACKGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+                cout << (isSel ? "> " : "  ") << options[i] << endl;
+                if (isSel) setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
             }
 
             int key = _getch();
             if (key == 224) {
                 key = _getch();
                 switch (key) {
-                    case 72: // Up arrow
+                    case 72:
                         do {
                             selectedIndex = (selectedIndex - 1 + options.size()) % options.size();
                         } while (options[selectedIndex] == "===================");
                         break;
-                    case 80: // Down arrow
+                    case 80:
                         do {
                             selectedIndex = (selectedIndex + 1) % options.size();
                         } while (options[selectedIndex] == "===================");
                         break;
                 }
-            }
-            else if (key == 13) { // Enter
+            } else if (key == 13) {
                 switch (selectedIndex) {
-                    case 0: // Create New Folder
-                        createNewFolder(currentPath);
+                    case 0: createNewFolder(currentPath); break;
+                    case 1: createNewFile(currentPath); break;
+                    case 3: { // Copy
+                        cout << "\nEnter item name to copy: ";
+                        string itemName;
+                        getline(cin, itemName);
+                        if (!itemName.empty()) copyItem(currentPath + "\\" + itemName);
                         break;
-                    case 1: // Create New File
-                        createNewFile(currentPath);
+                    }
+                    case 4: { // Move
+                        cout << "\nEnter item name to move: ";
+                        string itemName;
+                        getline(cin, itemName);
+                        if (!itemName.empty()) moveItem(currentPath + "\\" + itemName);
                         break;
-                    case 3: // Copy Selected
-                        // TODO: Implement copy functionality
+                    }
+                    case 5: { // Delete
+                        cout << "\nEnter item name to delete: ";
+                        string itemName;
+                        getline(cin, itemName);
+                        if (!itemName.empty()) deleteFile(currentPath + "\\" + itemName);
                         break;
-                    case 4: // Move Selected
-                        // TODO: Implement move functionality
+                    }
+                    case 6: { // Rename
+                        cout << "\nEnter item name to rename: ";
+                        string itemName;
+                        getline(cin, itemName);
+                        if (!itemName.empty()) renameFile(currentPath + "\\" + itemName);
                         break;
-                    case 5: // Delete Selected
-                        // TODO: Implement delete functionality
-                        break;
-                    case 6: // Rename Selected
-                        // TODO: Implement rename functionality
-                        break;
-                    case 8: // Back
-                        running = false;
-                        break;
+                    }
+                    case 8: running = false; break;
                 }
-            }
-            else if (key == 27) { // Escape
+            } else if (key == 27 || key == 'q' || key == 'Q') {
                 running = false;
             }
         }
     }
 
-
     void drawFileList(const vector<FileInfo>& files, const string& currentPath, int selectedIndex) {
         CONSOLE_SCREEN_BUFFER_INFO csbi;
         GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-        int windowHeight = csbi.srWindow.Bottom - csbi.srWindow.Top - 4; // -4 for header and footer
+        int windowHeight = csbi.srWindow.Bottom - csbi.srWindow.Top - 5;
+        if (windowHeight < 5) windowHeight = 15;
+
         int startIndex = max(0, selectedIndex - windowHeight / 2);
-        if (startIndex + windowHeight >= files.size()) {
+        if (startIndex + windowHeight >= (int)files.size()) {
             startIndex = max(0, (int)files.size() - windowHeight);
         }
 
         system("cls");
-        cout << "Current directory: " << currentPath << endl;
-        cout << "Use Up/Down arrows to navigate, Enter to select, 'q' to return to disk selection, 'b' to go back." << endl << endl;
+        setColor(FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+        cout << "Directory: " << currentPath << endl;
+        setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        cout << "Keys: [Arrows] Navigate | [Enter] Open | [Left] Details | [Right] Info | [P] Preview | [O] Operations | [S] Search | [q] Back\n\n";
 
-        HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
         for (int i = startIndex; i < min(startIndex + windowHeight, (int)files.size()); i++) {
             bool isSel = (i == selectedIndex);
-            if (isSel) SetConsoleTextAttribute(hConsole, BACKGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
-            cout << (isSel ? ">" : "   ");
-            cout << setw(40) << left << files[i].name;
-            cout << setw(50) << left << files[i].fullPath << endl;
-            if (isSel) SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-        }
+            if (isSel) {
+                setColor(BACKGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+            } else {
+                setColor(getFileColor(files[i]));
+            }
 
-        cout << endl << endl;
+            cout << (isSel ? "> " : "  ");
+            cout << setw(35) << left << (files[i].isDirectory ? "[" + files[i].name + "]" : files[i].name);
+            cout << setw(45) << left << files[i].fullPath << endl;
+
+            setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        }
     }
 
     void showFileInfo(const FileInfo& file) {
         system("cls");
-        cout << "Information for: " << file.fullPath << endl << endl;
-
-        cout << "Type: " << getFileType(file) << endl;
+        setColor(FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+        cout << "================================================================================\n";
+        cout << "                         FILE / FOLDER INFORMATION                              \n";
+        cout << "================================================================================\n";
+        setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+        cout << "Name:       " << file.name << "\n";
+        cout << "Full Path:  " << file.fullPath << "\n";
+        cout << "Type:       " << getFileType(file) << "\n";
 
         if (!file.isDirectory) {
             WIN32_FIND_DATAA findData;
@@ -844,26 +1042,20 @@ private:
                 fileSize.LowPart = findData.nFileSizeLow;
                 fileSize.HighPart = findData.nFileSizeHigh;
 
-                cout << "Size: " << formatFileSize(fileSize.QuadPart) << endl;
-                cout << "Created: " << formatFileTime(findData.ftCreationTime) << endl;
-                cout << "Modified: " << formatFileTime(findData.ftLastWriteTime) << endl;
-                cout << "Accessed: " << formatFileTime(findData.ftLastAccessTime) << endl;
+                cout << "Size:       " << formatFileSize(fileSize) << " (" << fileSize.QuadPart << " bytes)\n";
+                cout << "Created:    " << formatFileTime(findData.ftCreationTime) << "\n";
+                cout << "Modified:   " << formatFileTime(findData.ftLastWriteTime) << "\n";
+                cout << "Accessed:   " << formatFileTime(findData.ftLastAccessTime) << "\n";
 
-                // Additional attributes
-                cout << "\nAttributes:" << endl;
-                if (findData.dwFileAttributes & FILE_ATTRIBUTE_READONLY) cout << "- Read-only" << endl;
-                if (findData.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) cout << "- Hidden" << endl;
-                if (findData.dwFileAttributes & FILE_ATTRIBUTE_SYSTEM) cout << "- System" << endl;
-                if (findData.dwFileAttributes & FILE_ATTRIBUTE_ARCHIVE) cout << "- Archive" << endl;
-                if (findData.dwFileAttributes & FILE_ATTRIBUTE_COMPRESSED) cout << "- Compressed" << endl;
-                if (findData.dwFileAttributes & FILE_ATTRIBUTE_ENCRYPTED) cout << "- Encrypted" << endl;
-
+                cout << "\nAttributes: ";
+                if (findData.dwFileAttributes & FILE_ATTRIBUTE_READONLY) cout << "[Read-Only] ";
+                if (findData.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) cout << "[Hidden] ";
+                if (findData.dwFileAttributes & FILE_ATTRIBUTE_SYSTEM) cout << "[System] ";
+                if (findData.dwFileAttributes & FILE_ATTRIBUTE_ARCHIVE) cout << "[Archive] ";
+                cout << "\n";
                 FindClose(hFind);
             }
-        }
-        else {
-            // Directory specific information
-            cout << "\nDirectory Contents:" << endl;
+        } else {
             int fileCount = 0, dirCount = 0;
             ULARGE_INTEGER totalSize = calculateFolderSize(file.fullPath);
 
@@ -872,37 +1064,138 @@ private:
             if (hFind != INVALID_HANDLE_VALUE) {
                 do {
                     if (strcmp(findData.cFileName, ".") != 0 && strcmp(findData.cFileName, "..") != 0) {
-                        if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-                            dirCount++;
-                        else
-                            fileCount++;
+                        if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) dirCount++;
+                        else fileCount++;
                     }
                 } while (FindNextFileA(hFind, &findData));
                 FindClose(hFind);
             }
 
-            cout << "Size: " << formatFileSize(totalSize.QuadPart) << endl;
-            cout << "Contains " << fileCount << " files and " << dirCount << " subdirectories" << endl;
-
-            // Show creation and modification times
-            WIN32_FIND_DATAA dirData;
-            if (FindFirstFileA(file.fullPath.c_str(), &dirData) != INVALID_HANDLE_VALUE) {
-                cout << "Created: " << formatFileTime(dirData.ftCreationTime) << endl;
-                cout << "Modified: " << formatFileTime(dirData.ftLastWriteTime) << endl;
-                cout << "Accessed: " << formatFileTime(dirData.ftLastAccessTime) << endl;
-
-                cout << "\nAttributes:" << endl;
-                if (dirData.dwFileAttributes & FILE_ATTRIBUTE_READONLY) cout << "- Read-only" << endl;
-                if (dirData.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) cout << "- Hidden" << endl;
-                if (dirData.dwFileAttributes & FILE_ATTRIBUTE_SYSTEM) cout << "- System" << endl;
-                if (dirData.dwFileAttributes & FILE_ATTRIBUTE_ARCHIVE) cout << "- Archive" << endl;
-                if (dirData.dwFileAttributes & FILE_ATTRIBUTE_COMPRESSED) cout << "- Compressed" << endl;
-                if (dirData.dwFileAttributes & FILE_ATTRIBUTE_ENCRYPTED) cout << "- Encrypted" << endl;
-            }
+            cout << "Size:       " << formatFileSize(totalSize) << " (" << totalSize.QuadPart << " bytes)\n";
+            cout << "Contains:   " << fileCount << " files and " << dirCount << " subdirectories\n";
         }
 
-        cout << "\nPress any key to return..." << endl;
+        setColor(FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+        cout << "================================================================================\n";
+        setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        cout << "\nPress any key to return...";
         _getch();
+    }
+
+    void showFileManagement(const FileInfo& file) {
+        vector<string> options = {
+            "Open / Execute",
+            "Copy Item",
+            "Move Item",
+            "Delete Item",
+            "Rename Item",
+            "Edit File Attributes",
+            "Calculate Checksum (MD5 / SHA256)",
+            "Preview Text Content",
+            "Copy Path to Clipboard",
+            "Open Location in Explorer",
+            "Back"
+        };
+        int selectedIndex = 0;
+        bool running = true;
+
+        while (running) {
+            system("cls");
+            setColor(FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+            cout << "MANAGEMENT OPTIONS: " << file.name << "\n";
+            cout << "Path: " << file.fullPath << "\n\n";
+            setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+
+            for (size_t i = 0; i < options.size(); i++) {
+                bool isSel = (i == (size_t)selectedIndex);
+                if (isSel) setColor(BACKGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+                cout << (isSel ? "> " : "  ") << options[i] << endl;
+                if (isSel) setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+            }
+
+            int key = _getch();
+            if (key == 224) {
+                key = _getch();
+                switch (key) {
+                    case 72: selectedIndex = (selectedIndex - 1 + options.size()) % options.size(); break;
+                    case 80: selectedIndex = (selectedIndex + 1) % options.size(); break;
+                }
+            } else if (key == 13) {
+                switch (selectedIndex) {
+                    case 0: // Open
+                        if (file.isDirectory) browseDirectory(file.fullPath);
+                        else ShellExecuteA(NULL, "open", file.fullPath.c_str(), NULL, NULL, SW_SHOW);
+                        break;
+                    case 1: copyItem(file.fullPath); break;
+                    case 2: moveItem(file.fullPath); break;
+                    case 3: deleteFile(file.fullPath); running = false; break;
+                    case 4: renameFile(file.fullPath); running = false; break;
+                    case 5: manageFileAttributes(file.fullPath); break;
+                    case 6: showFileHashes(file.fullPath); break;
+                    case 7: previewTextFile(file.fullPath); break;
+                    case 8: // Clipboard
+                        if (OpenClipboard(NULL)) {
+                            EmptyClipboard();
+                            HGLOBAL hGlob = GlobalAlloc(GMEM_FIXED, file.fullPath.length() + 1);
+                            if (hGlob) {
+                                strcpy((char*)hGlob, file.fullPath.c_str());
+                                SetClipboardData(CF_TEXT, hGlob);
+                                GlobalFree(hGlob);
+                                setColor(FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+                                cout << "\n[+] Path copied to clipboard!\n";
+                            }
+                            CloseClipboard();
+                        }
+                        cout << "Press any key to continue...";
+                        _getch();
+                        break;
+                    case 9: // Explorer
+                        ShellExecuteA(NULL, "explore", file.isDirectory ? file.fullPath.c_str() : file.fullPath.substr(0, file.fullPath.find_last_of("\\")).c_str(), NULL, NULL, SW_SHOW);
+                        break;
+                    case 10: running = false; break;
+                }
+            } else if (key == 'p' || key == 'P') {
+                previewTextFile(file.fullPath);
+            } else if (key == 27 || key == 'q' || key == 'Q') {
+                running = false;
+            }
+        }
+    }
+
+    void drawFileManager(const vector<DiskInfo>& drives, int selectedIndex) {
+        system("cls");
+        setColor(FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+        cout << "================================================================================\n";
+        cout << "                            SYSTEM FILE MANAGER                                 \n";
+        cout << "================================================================================\n";
+        setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        cout << "Keys: [Up/Down] Choose Drive | [Enter] Open Drive | [Left/Right] Info | [S] Search | [q] Quit\n\n";
+
+        for (size_t i = 0; i < drives.size(); i++) {
+            bool isSel = (i == (size_t)selectedIndex);
+            if (isSel) setColor(BACKGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+
+            cout << (isSel ? "> " : "  ");
+            cout << setw(4) << left << drives[i].drive;
+            cout << setw(20) << left << (drives[i].label.empty() ? "Local Disk" : drives[i].label);
+
+            double usedSpace = drives[i].totalSpace - drives[i].freeSpace;
+            double usagePercentage = (drives[i].totalSpace > 0) ? (usedSpace / drives[i].totalSpace) * 100.0 : 0.0;
+
+            if (!isSel) {
+                if (usagePercentage >= 90.0) setColor(FOREGROUND_RED | FOREGROUND_INTENSITY);
+                else if (usagePercentage >= 70.0) setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+                else setColor(FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+            }
+
+            cout << getProgressBar(usagePercentage, 15) << " ";
+            cout << fixed << setprecision(1) << usedSpace << " GB / " << drives[i].totalSpace << " GB\n";
+
+            if (isSel) setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        }
+        setColor(FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+        cout << "================================================================================\n";
+        setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
     }
 
     void browseDirectory(const string& path) {
@@ -919,385 +1212,89 @@ private:
             }
 
             int key = _getch();
-            if (g_ctrlCPressed) { // Check for Ctrl+C
-                g_ctrlCPressed = FALSE; // Reset the flag
-                running = false; // Exit this menu loop
-                continue; // Skip the rest of the loop iteration
-            }
-            if (key == 224) { // Arrow key pressed
+            if (key == 224) {
                 key = _getch();
                 switch (key) {
-                    case 72: // Up arrow
-                        selectedIndex = (selectedIndex - 1 + files.size()) % files.size();
-                        needsUpdate = true;
+                    case 72: // Up
+                        if (!files.empty()) {
+                            selectedIndex = (selectedIndex - 1 + files.size()) % files.size();
+                            needsUpdate = true;
+                        }
                         break;
-                    case 80: // Down arrow
-                        selectedIndex = (selectedIndex + 1) % files.size();
-                        needsUpdate = true;
+                    case 80: // Down
+                        if (!files.empty()) {
+                            selectedIndex = (selectedIndex + 1) % files.size();
+                            needsUpdate = true;
+                        }
                         break;
-                    case 75: // Left arrow
-                        if (selectedIndex < files.size()) {
+                    case 75: // Left -> File Management
+                        if (selectedIndex < (int)files.size()) {
                             showFileManagement(files[selectedIndex]);
                             files = getDirectoryContents(currentPath);
                             needsUpdate = true;
                         }
                         break;
-                    case 77: // Right arrow
-                        if (selectedIndex < files.size()) {
+                    case 77: // Right -> File Info
+                        if (selectedIndex < (int)files.size()) {
                             showFileInfo(files[selectedIndex]);
                             needsUpdate = true;
                         }
                         break;
                 }
-            }
-            else if (key == 13) { // Enter key
-                if (selectedIndex < files.size()) {
+            } else if (key == 13) { // Enter
+                if (selectedIndex < (int)files.size()) {
                     if (files[selectedIndex].isDirectory) {
                         if (files[selectedIndex].name == "..") {
-                            // Go up one directory
                             size_t lastSlash = currentPath.find_last_of("\\");
                             if (lastSlash != string::npos) {
                                 currentPath = currentPath.substr(0, lastSlash);
-                                if (currentPath.empty()) currentPath = "C:\\";
+                                if (currentPath.length() == 2 && currentPath[1] == ':') currentPath += "\\";
                             }
-                        }
-                        else {
-                            // Enter directory
+                        } else {
                             currentPath = files[selectedIndex].fullPath;
                         }
                         files = getDirectoryContents(currentPath);
                         selectedIndex = 0;
                         needsUpdate = true;
-                    }
-                    else {
-                        // Open file
+                    } else {
                         ShellExecuteA(NULL, "open", files[selectedIndex].fullPath.c_str(), NULL, NULL, SW_SHOW);
                     }
                 }
-            }
-            else if (key == 'q' || key == 'Q') {
+            } else if (key == 'q' || key == 'Q') {
                 running = false;
-            }
-            else if (key == 'b' || key == 'B') {
-                // Go back one directory
+            } else if (key == 'b' || key == 'B') {
                 size_t lastSlash = currentPath.find_last_of("\\");
                 if (lastSlash != string::npos) {
                     currentPath = currentPath.substr(0, lastSlash);
-                    if (currentPath.empty()) currentPath = "C:\\";
+                    if (currentPath.length() == 2 && currentPath[1] == ':') currentPath += "\\";
                     files = getDirectoryContents(currentPath);
                     selectedIndex = 0;
                     needsUpdate = true;
                 }
-            }
-            else if (key == 's' || key == 'S') {
+            } else if (key == 's' || key == 'S') {
                 startSearch(currentPath);
                 files = getDirectoryContents(currentPath);
                 needsUpdate = true;
-            }
-            else if (key == 'h' || key == 'H') {
+            } else if (key == 'h' || key == 'H') {
                 showFileManagerHelp();
                 needsUpdate = true;
-            }
-            else if (key == '4') {
+            } else if (key == '4') {
                 files = getDirectoryContents(currentPath);
                 needsUpdate = true;
-            }
-            else if (key == 'o' || key == 'O') {
+            } else if (key == 'o' || key == 'O') {
                 showAdditionalOperations(currentPath);
                 files = getDirectoryContents(currentPath);
                 needsUpdate = true;
-            }
-        }
-    }
-
-    bool checkFileAccess(const string& filePath) {
-        HANDLE hFile = CreateFileA(
-                filePath.c_str(),
-                GENERIC_READ | GENERIC_WRITE,
-                0,
-                NULL,
-                OPEN_EXISTING,
-                FILE_ATTRIBUTE_NORMAL,
-                NULL
-        );
-
-        if (hFile == INVALID_HANDLE_VALUE) {
-            DWORD error = GetLastError();
-            cout << "Error accessing file: " << filePath << endl;
-            cout << "Error code: " << error << endl;
-
-            switch (error) {
-                case ERROR_ACCESS_DENIED:
-                    cout << "Access denied. Try running the program as administrator." << endl;
-                    break;
-                case ERROR_SHARING_VIOLATION:
-                    cout << "File is being used by another process." << endl;
-                    break;
-                case ERROR_FILE_NOT_FOUND:
-                    cout << "File not found." << endl;
-                    break;
-                default:
-                    cout << "Unknown error occurred." << endl;
-            }
-
-            return false;
-        }
-
-        CloseHandle(hFile);
-        return true;
-    }
-
-    void showFileAccessError() {
-        system("cls");
-        cout << "+-------------------------------------------------------------+" << endl;
-        cout << "|                   File Access Error                         |" << endl;
-        cout << "+-------------------------------------------------------------+" << endl;
-        cout << "| Possible causes:                                            |" << endl;
-        cout << "| 1. Program is still running                                 |" << endl;
-        cout << "| 2. Antivirus is blocking access                             |" << endl;
-        cout << "| 3. Insufficient access rights                               |" << endl;
-        cout << "+-------------------------------------------------------------+" << endl;
-        cout << "| Solutions:                                                  |" << endl;
-        cout << "| 1. Close all instances of the program                       |" << endl;
-        cout << "| 2. Run the program as administrator                         |" << endl;
-        cout << "| 3. Temporarily disable antivirus                            |" << endl;
-        cout << "| 4. Restart the computer                                     |" << endl;
-        cout << "+-------------------------------------------------------------+" << endl;
-        cout << "\nPress any key to continue...";
-        _getch();
-    }
-
-    void drawFileManager(const vector<DiskInfo>& drives, int selectedIndex) {
-        CONSOLE_SCREEN_BUFFER_INFO csbi;
-        GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-        int windowHeight = csbi.srWindow.Bottom - csbi.srWindow.Top - 4; // -4 for header and footer
-        int startIndex = max(0, selectedIndex - windowHeight / 2);
-        if (startIndex + windowHeight >= drives.size()) {
-            startIndex = max(0, (int)drives.size() - windowHeight);
-        }
-
-        system("cls");
-        setlocale(LC_ALL, "RU");
-        cout << "File Manager" << endl;
-        cout << "Use Up/Down arrows to navigate, Left/Right arrows for info, Enter to select, 'q' to quit, 'h' for help." << endl << endl;
-
-        HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-        for (int i = startIndex; i < min(startIndex + windowHeight, (int)drives.size()); i++) {
-            bool isSel = (i == selectedIndex);
-            if (isSel) SetConsoleTextAttribute(hConsole, BACKGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
-            cout << (isSel ? ">" : "   ");
-            cout << setw(3) << drives[i].drive << "  ";
-            cout << setw(20) << left << drives[i].label << "  ";
-
-            // Calculate used space and usage percentage
-            double usedSpace = drives[i].totalSpace - drives[i].freeSpace;
-            double usagePercentage = (usedSpace / drives[i].totalSpace) * 100;
-
-            // Set color based on usage percentage
-            if (usagePercentage >= 90) {
-                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_INTENSITY);
-            }
-            else if (usagePercentage >= 70) {
-                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-            }
-            else if (usagePercentage >= 50) {
-                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN);
-            }
-            else {
-                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-            }
-
-            cout << fixed << setprecision(2) << setw(8) << usedSpace << "GB/"
-                 << setw(8) << drives[i].totalSpace << " GB ";
-
-            // Reset color to default
-            if (!isSel) SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-
-            cout << "Info >" << endl;
-            if (isSel) SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-        }
-    }
-
-    void renameFile(const string& oldPath) {
-        system("cls");
-        cout << "Rename: " << oldPath << endl;
-
-        // Проверяем, существует ли файл
-        DWORD attributes = GetFileAttributesA(oldPath.c_str());
-        if (attributes == INVALID_FILE_ATTRIBUTES) {
-            cout << "Error: File not found!" << endl;
-            cout << "Press any key to continue...";
-            _getch();
-            return;
-        }
-
-        // Проверяем права доступа
-        HANDLE hFile = CreateFileA(oldPath.c_str(),
-                                   GENERIC_READ | GENERIC_WRITE,
-                                   0,
-                                   NULL,
-                                   OPEN_EXISTING,
-                                   FILE_ATTRIBUTE_NORMAL,
-                                   NULL);
-
-        if (hFile == INVALID_HANDLE_VALUE) {
-            DWORD error = GetLastError();
-            cout << "Error: Cannot access file. ";
-            switch (error) {
-                case ERROR_ACCESS_DENIED:
-                    cout << "Access denied. The file might be in use or protected." << endl;
-                    break;
-                case ERROR_SHARING_VIOLATION:
-                    cout << "File is being used by another process." << endl;
-                    break;
-                default:
-                    cout << "Error code: " << error << endl;
-            }
-            cout << "Press any key to continue...";
-            _getch();
-            return;
-        }
-        CloseHandle(hFile);
-
-        cout << "Enter new name: ";
-        string newName;
-        getline(cin, newName);
-
-        if (newName.empty()) {
-            cout << "Error: New name cannot be empty!" << endl;
-            cout << "Press any key to continue...";
-            _getch();
-            return;
-        }
-
-        string newPath = oldPath.substr(0, oldPath.find_last_of("\\") + 1) + newName;
-
-        // Проверяем, не существует ли уже файл с таким именем
-        if (GetFileAttributesA(newPath.c_str()) != INVALID_FILE_ATTRIBUTES) {
-            cout << "Error: A file with this name already exists!" << endl;
-            cout << "Press any key to continue...";
-            _getch();
-            return;
-        }
-
-        // Пробуем переименовать с разными правами доступа
-        if (!MoveFileA(oldPath.c_str(), newPath.c_str())) {
-            DWORD error = GetLastError();
-            cout << "Failed to rename file. ";
-            switch (error) {
-                case ERROR_ACCESS_DENIED:
-                    cout << "Access denied. Try running the program as administrator." << endl;
-                    break;
-                case ERROR_SHARING_VIOLATION:
-                    cout << "File is being used by another process." << endl;
-                    break;
-                case ERROR_ALREADY_EXISTS:
-                    cout << "A file with this name already exists." << endl;
-                    break;
-                default:
-                    cout << "Error code: " << error << endl;
-            }
-        }
-        else {
-            cout << "File renamed successfully!" << endl;
-        }
-
-        cout << "Press any key to continue...";
-        _getch();
-    }
-
-    void showFileManagement(const FileInfo& file) {
-        vector<string> options = {
-                "Rename",
-                "Delete",
-                "Copy Path",
-                "Open in Explorer",
-                "Create New Folder",
-                "Create New File",
-                "Back"
-        };
-        int selectedIndex = 0;
-        bool running = true;
-
-        while (running) {
-            system("cls");
-            cout << "File Management: " << file.fullPath << endl << endl;
-
-            for (int i = 0; i < options.size(); i++) {
-                if (i == selectedIndex) {
-                    cout << "> ";
-                } else {
-                    cout << "  ";
+            } else if (key == 'p' || key == 'P') {
+                if (selectedIndex < (int)files.size() && !files[selectedIndex].isDirectory) {
+                    previewTextFile(files[selectedIndex].fullPath);
+                    needsUpdate = true;
                 }
-                cout << options[i] << endl;
-            }
-
-            int key = _getch();
-            if (g_ctrlCPressed) { // Check for Ctrl+C
-                g_ctrlCPressed = FALSE; // Reset the flag
-                running = false; // Exit this menu loop
-                continue; // Skip the rest of the loop iteration
-            }
-            if (key == 224) { // Arrow key pressed
-                key = _getch();
-                switch (key) {
-                    case 72: // Up arrow
-                        selectedIndex = (selectedIndex - 1 + options.size()) % options.size();
-                        break;
-                    case 80: // Down arrow
-                        selectedIndex = (selectedIndex + 1) % options.size();
-                        break;
-                }
-            } else if (key == 13) { // Enter key
-                switch (selectedIndex) {
-                    case 0: // Rename
-                        renameFile(file.fullPath);
-                        break;
-                    case 1: // Delete
-                        deleteFile(file.fullPath);
-                        break;
-                    case 2: { // Copy Path
-                        if (OpenClipboard(NULL)) {
-                            EmptyClipboard();
-                            HGLOBAL hGlob = GlobalAlloc(GMEM_FIXED, file.fullPath.length() + 1);
-                            if (hGlob) {
-                                strcpy((char *) hGlob, file.fullPath.c_str());
-                                SetClipboardData(CF_TEXT, hGlob);
-                                GlobalFree(hGlob);
-                                cout << "Path copied to clipboard!" << endl;
-                            }
-                            CloseClipboard();
-                        }
-                        cout << "Press any key to continue...";
-                        _getch();
-                        break;
-                    }
-                    case 3: // Open in Explorer
-                        ShellExecuteA(NULL, "explore", file.fullPath.c_str(), NULL, NULL, SW_SHOW);
-                        break;
-                    case 4: // Create New Folder
-                        createNewFolder(file.isDirectory ? file.fullPath : file.fullPath.substr(0,
-                                                                                                file.fullPath.find_last_of(
-                                                                                                        "\\")));
-                        break;
-                    case 5: // Create New File
-                        createNewFile(file.isDirectory ? file.fullPath : file.fullPath.substr(0, file.fullPath.find_last_of(
-                                "\\")));
-                        break;
-                    case 6: // Back
-                        running = false;
-                        break;
-                }
-            } else if (key == 27) { // Escape key
-                running = false;
             }
         }
     }
 
 public:
-    // Public wrapper to expose search functionality outside the class
-    void startSearchPublic(const string& startPath) { startSearch(startPath); }
-
     void fileManager() {
         vector<DiskInfo> drives = getAvailableDrives();
         int selectedIndex = 0;
@@ -1311,56 +1308,42 @@ public:
             }
 
             int key = _getch();
-            if (g_ctrlCPressed) { // Check for Ctrl+C
-                g_ctrlCPressed = FALSE; // Reset the flag
-                running = false; // Exit this menu loop
-                continue; // Skip the rest of the loop iteration
-            }
-            if (key == 224) { // Arrow key pressed
+            if (key == 224) {
                 key = _getch();
                 switch (key) {
-                    case 72: // Up arrow
-                        selectedIndex = (selectedIndex - 1 + drives.size()) % drives.size();
-                        needsUpdate = true;
+                    case 72: // Up
+                        if (!drives.empty()) {
+                            selectedIndex = (selectedIndex - 1 + drives.size()) % drives.size();
+                            needsUpdate = true;
+                        }
                         break;
-                    case 80: // Down arrow
-                        selectedIndex = (selectedIndex + 1) % drives.size();
-                        needsUpdate = true;
-                        break;
-                    case 75: // Left arrow
-                        // Show disk management options
-                        system("cls");
-                        cout << "Disk Management for " << drives[selectedIndex].drive << endl;
-                        cout << "1. Check Disk" << endl;
-                        cout << "2. Defragment" << endl;
-                        cout << "3. Properties" << endl;
-                        cout << "Press any key to return..." << endl;
-                        _getch();
-                        needsUpdate = true;
-                        break;
-                    case 77: // Right arrow
-                        // Show detailed disk info
-                        system("cls");
-                        cout << "Detailed Information for " << drives[selectedIndex].drive << endl;
-                        cout << "Label: " << drives[selectedIndex].label << endl;
-                        cout << "Free Space: " << fixed << setprecision(2) << drives[selectedIndex].freeSpace << " GB" << endl;
-                        cout << "Total Space: " << fixed << setprecision(2) << drives[selectedIndex].totalSpace << " GB" << endl;
-                        cout << "Press any key to return..." << endl;
-                        _getch();
-                        needsUpdate = true;
+                    case 80: // Down
+                        if (!drives.empty()) {
+                            selectedIndex = (selectedIndex + 1) % drives.size();
+                            needsUpdate = true;
+                        }
                         break;
                 }
+            } else if (key == 13) {
+                if (selectedIndex < (int)drives.size()) {
+                    browseDirectory(drives[selectedIndex].drive);
+                    needsUpdate = true;
+                }
+            } else if (key == 'q' || key == 'Q') {
+                running = false;
+            } else if (key == '4') {
+                drives = getAvailableDrives();
+                needsUpdate = true;
+            } else if (key == 's' || key == 'S') {
+                startSearch("");
+                needsUpdate = true;
             }
-            else if (key == 13) { browseDirectory(drives[selectedIndex].drive); needsUpdate = true; }
-            else if (key == 'q' || key == 'Q') { running = false; }
-            else if (key == 'h' || key == 'H') { showFileManagerHelp(); needsUpdate = true; }
-            else if (key == '4') { drives = getAvailableDrives(); needsUpdate = true; }
-            else if (key == 's' || key == 'S') { startSearch(""); needsUpdate = true; }
         }
     }
 
+    void startSearchPublic(const string& startPath) { startSearch(startPath); }
+
     void startSearchNonInteractive(const string& pattern, const string& startPath) {
-        // Reuse the interactive flow but skip prompts
         string searchPattern = pattern;
         bool foldersOnly = false;
         bool filesOnly = false;
@@ -1376,56 +1359,30 @@ public:
         } else if (searchPattern.find("SS::") == 0) {
             exactMatch = true;
             searchPattern = searchPattern.substr(4);
-        } else if (searchPattern.find("LOCAL::") == 0) {
-            searchAllDrives = false;
-            searchPattern = searchPattern.substr(7);
         }
 
-        if (searchPattern.empty()) {
-            cout << "Search pattern cannot be empty!" << endl;
-            cout << "Press any key to continue...";
-            _getch();
-            return;
-        }
+        if (searchPattern.empty()) return;
 
         system("cls");
         results.clear();
         if (searchAllDrives) {
-            cout << "Searching across all drives for: " << searchPattern << endl;
-            cout << "This may take a while..." << endl << endl;
             vector<DiskInfo> drives = getAvailableDrives();
-            cout << "Found " << drives.size() << " drives to search." << endl;
-            for (size_t i = 0; i < drives.size(); i++) {
-                cout << "Searching drive " << (i + 1) << "/" << drives.size() << ": " << drives[i].drive
-                     << " (Found: " << results.size() << " items)" << endl;
+            for (const auto& drive : drives) {
                 try {
-                    vector<FileInfo> driveResults = searchFiles(drives[i].drive, searchPattern, foldersOnly, filesOnly, exactMatch);
+                    vector<FileInfo> driveResults = searchFiles(drive.drive, searchPattern, foldersOnly, filesOnly, exactMatch);
                     results.insert(results.end(), driveResults.begin(), driveResults.end());
-                } catch (...) {
-                    cout << "  -> Error accessing " << drives[i].drive << ", skipping..." << endl;
-                }
+                } catch (...) {}
             }
         } else {
-            string base = startPath.empty() ? string("") : startPath;
+            string base = startPath;
             if (base.empty()) {
                 char currentPath[MAX_PATH];
                 GetCurrentDirectoryA(MAX_PATH, currentPath);
                 base = currentPath;
             }
-            cout << "Searching in current directory for: " << searchPattern << endl;
             results = searchFiles(base, searchPattern, foldersOnly, filesOnly, exactMatch);
         }
 
-        if (results.empty()) {
-            cout << "No files found matching the pattern: " << searchPattern << endl;
-            cout << "Press any key to continue...";
-            _getch();
-            return;
-        }
-        cout << endl << "Search completed! Total items found: " << results.size() << endl;
-        cout << "Press any key to view results...";
-        _getch();
-        // Reuse interactive viewer
         showSearchResults(results, searchPattern);
     }
 };
@@ -1437,14 +1394,13 @@ void file_manger() {
     FileManager.fileManager();
 }
 
-// Global function to be linked from other modules
-void startSearch(const std::string& startPath) {
+void startSearch(const string& startPath) {
     Logger::info("Starting file search from path: " + startPath);
     FileManager.startSearchPublic(startPath);
     Logger::info("File search completed");
 }
 
-void startSearchWithPattern(const std::string& pattern, const std::string& startPath) {
+void startSearchWithPattern(const string& pattern, const string& startPath) {
     Logger::info("Starting file search with pattern: " + pattern + " from path: " + startPath);
     FileManager.startSearchNonInteractive(pattern, startPath);
     Logger::info("Pattern file search completed");

@@ -8,18 +8,20 @@
 #include <algorithm>
 #include "../../Logger.h"
 
+using namespace std;
+
 // Используем внешнюю переменную из main.cpp
 extern volatile BOOL g_ctrlCPressed;
 
 // --- Вспомогательные функции ---
 
-bool FileExists(const std::string& path) {
+bool FileExists(const string& path) {
     DWORD dwAttrib = GetFileAttributesA(path.c_str());
     return (dwAttrib != INVALID_FILE_ATTRIBUTES && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 }
 
-std::string ExecCommand(const std::string& cmd) {
-    std::string result;
+string ExecCommand(const string& cmd) {
+    string result;
     char buffer[128];
     char tempPath[MAX_PATH];
     char tempFile[MAX_PATH];
@@ -27,10 +29,10 @@ std::string ExecCommand(const std::string& cmd) {
     GetTempPathA(MAX_PATH, tempPath);
     GetTempFileNameA(tempPath, "scw", 0, tempFile);
 
-    std::string fullCmd = "cmd /c \"" + cmd + " > \"" + std::string(tempFile) + "\" 2>&1\"";
+    string fullCmd = "cmd /c \"" + cmd + " > \"" + string(tempFile) + "\" 2>&1\"";
     system(fullCmd.c_str());
 
-    std::ifstream file(tempFile);
+    ifstream file(tempFile);
     if (file.is_open()) {
         while (file.getline(buffer, sizeof(buffer))) {
             result += buffer;
@@ -42,8 +44,8 @@ std::string ExecCommand(const std::string& cmd) {
     return result;
 }
 
-std::string FindSignTool() {
-    std::vector<std::string> paths = {
+string FindSignTool() {
+    vector<string> paths = {
         "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.22621.0\\x64\\signtool.exe",
         "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.19041.0\\x64\\signtool.exe",
         "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\x64\\signtool.exe",
@@ -60,36 +62,36 @@ std::string FindSignTool() {
     return "";
 }
 
-bool CreateCertificate(const std::string& name, const std::string& password, std::string& pfxPath) {
+bool CreateCertificate(const string& name, const string& password, string& pfxPath) {
     if (g_ctrlCPressed) return false;
     
     char curDir[MAX_PATH];
     GetCurrentDirectoryA(MAX_PATH, curDir);
-    pfxPath = std::string(curDir) + "\\" + name + ".pfx";
+    pfxPath = string(curDir) + "\\" + name + ".pfx";
 
-    std::string escapedName = name;
-    std::string escapedPass = password;
+    string escapedName = name;
+    string escapedPass = password;
     size_t pos = 0;
-    while ((pos = escapedName.find('"', pos)) != std::string::npos) {
+    while ((pos = escapedName.find('"', pos)) != string::npos) {
         escapedName.replace(pos, 1, "`\"");
         pos += 2;
     }
     pos = 0;
-    while ((pos = escapedPass.find('"', pos)) != std::string::npos) {
+    while ((pos = escapedPass.find('"', pos)) != string::npos) {
         escapedPass.replace(pos, 1, "`\"");
         pos += 2;
     }
 
-    std::string psCommand = "powershell -ExecutionPolicy Bypass -Command \""
+    string psCommand = "powershell -ExecutionPolicy Bypass -Command \""
         "$Cert = New-SelfSignedCertificate -Type CodeSigningCert -Subject 'CN=" + escapedName + "' -CertStoreLocation 'Cert:\\CurrentUser\\My'; "
         "$CertPassword = ConvertTo-SecureString -String '" + escapedPass + "' -Force -AsPlainText; "
         "Export-PfxCertificate -Cert $Cert -FilePath '" + pfxPath + "' -Password $CertPassword -Force\"";
 
     Logger::info("Executing PowerShell to create certificate for: " + name);
-    std::string output = ExecCommand(psCommand);
+    string output = ExecCommand(psCommand);
     if (g_ctrlCPressed) return false;
     
-    if (output.find("Error") != std::string::npos || output.find("Exception") != std::string::npos) {
+    if (output.find("Error") != string::npos || output.find("Exception") != string::npos) {
          Logger::error("PowerShell execution failed: " + output);
          return false;
     }
@@ -103,7 +105,7 @@ bool CreateCertificate(const std::string& name, const std::string& password, std
     return success;
 }
 
-bool SignFile(const std::string& signtoolPath, const std::string& certPath, const std::string& password, const std::string& fileToSign) {
+bool SignFile(const string& signtoolPath, const string& certPath, const string& password, const string& fileToSign) {
     if (g_ctrlCPressed) return false;
     
     if (!FileExists(signtoolPath)) {
@@ -119,14 +121,14 @@ bool SignFile(const std::string& signtoolPath, const std::string& certPath, cons
         return false;
     }
 
-    std::string cmd = "\"" + signtoolPath + "\" sign /fd SHA256 /f \"" + certPath + "\" /p \"" + password + "\" /tr http://timestamp.digicert.com /td SHA256 \"" + fileToSign + "\"";
+    string cmd = "\"" + signtoolPath + "\" sign /fd SHA256 /f \"" + certPath + "\" /p \"" + password + "\" /tr http://timestamp.digicert.com /td SHA256 \"" + fileToSign + "\"";
 
     Logger::info("Signing file: " + fileToSign);
-    std::string output = ExecCommand(cmd);
+    string output = ExecCommand(cmd);
     
     if (g_ctrlCPressed) return false;
 
-    if (output.find("Successfully signed") != std::string::npos) {
+    if (output.find("Successfully signed") != string::npos) {
         Logger::success("File successfully signed: " + fileToSign);
         return true;
     } else {
@@ -135,13 +137,13 @@ bool SignFile(const std::string& signtoolPath, const std::string& certPath, cons
     }
 }
 
-bool SafeGetLine(const std::string& prompt, std::string& output) {
-    std::cout << prompt;
+bool SafeGetLine(const string& prompt, string& output) {
+    cout << prompt;
     output = "";
     
     while (true) {
         if (g_ctrlCPressed) {
-            std::cout << "\n[^C] Operation cancelled" << std::endl;
+            cout << "\n[^C] Operation cancelled" << endl;
             return false;
         }
         
@@ -149,24 +151,24 @@ bool SafeGetLine(const std::string& prompt, std::string& output) {
             int ch = _getch();
             
             if (ch == 3) { // Ctrl+C
-                std::cout << "\n[^C] Operation cancelled" << std::endl;
+                cout << "\n[^C] Operation cancelled" << endl;
                 return false;
             } else if (ch == 13) { // Enter
-                std::cout << std::endl;
+                cout << endl;
                 return true;
             } else if (ch == 8) { // Backspace
                 if (!output.empty()) {
                     output.pop_back();
-                    std::cout << "\b \b";
+                    cout << "\b \b";
                 }
             } else if (ch >= 32 && ch <= 126) {
                 output += ch;
-                std::cout << (char)ch;
+                cout << (char)ch;
             }
         }
         
         if (g_ctrlCPressed) {
-            std::cout << "\n[^C] Operation cancelled" << std::endl;
+            cout << "\n[^C] Operation cancelled" << endl;
             return false;
         }
         
@@ -174,7 +176,7 @@ bool SafeGetLine(const std::string& prompt, std::string& output) {
     }
 }
 
-void DrawSignerMenu(const std::vector<std::string>& options, int selectedIndex, const std::string& signtoolPath) {
+void DrawSignerMenu(const vector<string>& options, int selectedIndex, const string& signtoolPath) {
     system("cls");
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     
@@ -182,54 +184,54 @@ void DrawSignerMenu(const std::vector<std::string>& options, int selectedIndex, 
     GetConsoleScreenBufferInfo(hConsole, &csbi);
     int consoleWidth = csbi.srWindow.Right - csbi.srWindow.Left + 1;
     
-    std::string line(consoleWidth - 1, '=');
-    std::cout << line << "\n";
+    string line(consoleWidth - 1, '=');
+    cout << line << "\n";
     
-		std::string title = "CERTIFICATE TOOL";
+		string title = "CERTIFICATE TOOL";
     int padding = (consoleWidth - (int)title.length()) / 2;
-    std::cout << std::string(padding, ' ') << title << std::string(consoleWidth - padding - (int)title.length() - 1, ' ') << "\n";
+    cout << string(padding, ' ') << title << string(consoleWidth - padding - (int)title.length() - 1, ' ') << "\n";
     
-    std::cout << line << "\n";
+    cout << line << "\n";
     
     if (signtoolPath.empty()) {
-        std::cout << " STATUS: [!] SignTool NOT FOUND\n";
+        cout << " STATUS: [!] SignTool NOT FOUND\n";
     } else {
-        std::cout << " STATUS: [+] SignTool FOUND";
-        std::string pathDisplay = signtoolPath;
+        cout << " STATUS: [+] SignTool FOUND";
+        string pathDisplay = signtoolPath;
         int maxPathLen = consoleWidth - 25;
         if ((int)pathDisplay.length() > maxPathLen) {
             pathDisplay = "..." + pathDisplay.substr(pathDisplay.length() - (maxPathLen - 3));
         }
-        std::cout << "     PATH:   " << pathDisplay << "\n";
+        cout << "     PATH:   " << pathDisplay << "\n";
     }
-    std::cout << line << "\n\n";
+    cout << line << "\n\n";
     
     for (int i = 0; i < (int)options.size(); i++) {
         bool isSel = (i == selectedIndex);
         if (isSel) {
             SetConsoleTextAttribute(hConsole, BACKGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
-            std::cout << "> " << options[i];
+            cout << "> " << options[i];
         } else {
             SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-            std::cout << "  " << options[i];
+            cout << "  " << options[i];
         }
         
-        if (i == 0) std::cout << "  (Create new PFX and sign EXE)";
-        else if (i == 1) std::cout << "  (Use existing PFX file)";
-        else if (i == 2) std::cout << "  (Create PFX only)";
-        std::cout << "\n";
+        if (i == 0) cout << "  (Create new PFX and sign EXE)";
+        else if (i == 1) cout << "  (Use existing PFX file)";
+        else if (i == 2) cout << "  (Create PFX only)";
+        cout << "\n";
     }
     
     SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
     
-    std::cout << "\n" << line << "\n";
-    std::cout << "Press 'q' to return to main menu | Ctrl+C to cancel operation\n";
-    std::cout << line << "\n";
+    cout << "\n" << line << "\n";
+    cout << "Press 'q' to return to main menu | Ctrl+C to cancel operation\n";
+    cout << line << "\n";
 }
 
 // --- Основная функция меню подписи ---
 void ShowFileSignerMenu() {
-    std::vector<std::string> menuOptions = {
+    vector<string> menuOptions = {
         "Create New Certificate & Sign EXE",
         "Sign EXE using existing PFX",
         "Just Generate New Certificate (PFX)",
@@ -239,7 +241,7 @@ void ShowFileSignerMenu() {
     int selectedIndex = 0;
     bool running = true;
     
-    std::string signtoolPath = FindSignTool();
+    string signtoolPath = FindSignTool();
     
     while (running) {
         // Явно сбрасываем флаг при входе в меню
@@ -266,16 +268,16 @@ void ShowFileSignerMenu() {
             }
             
             system("cls");
-            std::cout << "==================================================\n";
+            cout << "==================================================\n";
             
-            std::string name, pass, exePath, pfxPath;
+            string name, pass, exePath, pfxPath;
             bool operationCancelled = false;
             
             switch (selectedIndex) {
                 case 0:
-                    std::cout << ">>> CREATE NEW CERTIFICATE & SIGN EXE <<<\n";
-                    std::cout << "==================================================\n\n";
-                    std::cout << "(Press Ctrl+C at any time to cancel)\n\n";
+                    cout << ">>> CREATE NEW CERTIFICATE & SIGN EXE <<<\n";
+                    cout << "==================================================\n\n";
+                    cout << "(Press Ctrl+C at any time to cancel)\n\n";
                     
                     if (!SafeGetLine("Certificate Name: ", name)) { operationCancelled = true; break; }
                     if (g_ctrlCPressed) { operationCancelled = true; break; }
@@ -286,34 +288,34 @@ void ShowFileSignerMenu() {
                     if (!SafeGetLine("EXE Path: ", exePath)) { operationCancelled = true; break; }
                     if (g_ctrlCPressed) { operationCancelled = true; break; }
                     
-                    exePath.erase(std::remove(exePath.begin(), exePath.end(), '\"'), exePath.end());
+                    exePath.erase(remove(exePath.begin(), exePath.end(), '\"'), exePath.end());
                     
                     if (!g_ctrlCPressed && CreateCertificate(name, pass, pfxPath)) {
                         if (!g_ctrlCPressed && !signtoolPath.empty()) {
                             if (SignFile(signtoolPath, pfxPath, pass, exePath)) {
-                                std::cout << "\n[+] SUCCESS: File signed successfully!\n";
+                                cout << "\n[+] SUCCESS: File signed successfully!\n";
                             } else if (!g_ctrlCPressed) {
-                                std::cout << "\n[-] FAILED: Signing failed.\n";
+                                cout << "\n[-] FAILED: Signing failed.\n";
                             }
                         } else if (!g_ctrlCPressed) {
-                            std::cout << "\n[!] SignTool not found. Cannot sign file.\n";
-                            std::cout << "Certificate was created at: " << pfxPath << "\n";
+                            cout << "\n[!] SignTool not found. Cannot sign file.\n";
+                            cout << "Certificate was created at: " << pfxPath << "\n";
                         }
                     } else if (!g_ctrlCPressed) {
-                        std::cout << "\n[-] FAILED: Certificate creation failed.\n";
+                        cout << "\n[-] FAILED: Certificate creation failed.\n";
                     }
                     break;
                     
                 case 1:
-                    std::cout << ">>> SIGN EXE USING EXISTING PFX <<<\n";
-                    std::cout << "==================================================\n\n";
-                    std::cout << "(Press Ctrl+C at any time to cancel)\n\n";
+                    cout << ">>> SIGN EXE USING EXISTING PFX <<<\n";
+                    cout << "==================================================\n\n";
+                    cout << "(Press Ctrl+C at any time to cancel)\n\n";
                     
                     if (signtoolPath.empty()) {
-                        std::cout << "SignTool Path (or press Enter if not needed):\n";
-                        std::string manualPath;
+                        cout << "SignTool Path (or press Enter if not needed):\n";
+                        string manualPath;
                         if (SafeGetLine("> ", manualPath) && !manualPath.empty()) {
-                            manualPath.erase(std::remove(manualPath.begin(), manualPath.end(), '\"'), manualPath.end());
+                            manualPath.erase(remove(manualPath.begin(), manualPath.end(), '\"'), manualPath.end());
                             signtoolPath = manualPath;
                         } else {
                             operationCancelled = true;
@@ -331,24 +333,24 @@ void ShowFileSignerMenu() {
                     if (!SafeGetLine("EXE Path: ", exePath)) { operationCancelled = true; break; }
                     if (g_ctrlCPressed) { operationCancelled = true; break; }
                     
-                    pfxPath.erase(std::remove(pfxPath.begin(), pfxPath.end(), '\"'), pfxPath.end());
-                    exePath.erase(std::remove(exePath.begin(), exePath.end(), '\"'), exePath.end());
+                    pfxPath.erase(remove(pfxPath.begin(), pfxPath.end(), '\"'), pfxPath.end());
+                    exePath.erase(remove(exePath.begin(), exePath.end(), '\"'), exePath.end());
                     
                     if (!g_ctrlCPressed && !signtoolPath.empty()) {
                         if (SignFile(signtoolPath, pfxPath, pass, exePath)) {
-                            std::cout << "\n[+] SUCCESS: File signed successfully!\n";
+                            cout << "\n[+] SUCCESS: File signed successfully!\n";
                         } else if (!g_ctrlCPressed) {
-                            std::cout << "\n[-] FAILED: Signing failed.\n";
+                            cout << "\n[-] FAILED: Signing failed.\n";
                         }
                     } else if (!g_ctrlCPressed) {
-                        std::cout << "\n[!] SignTool path not specified. Cannot sign.\n";
+                        cout << "\n[!] SignTool path not specified. Cannot sign.\n";
                     }
                     break;
                     
                 case 2:
-                    std::cout << ">>> GENERATE NEW CERTIFICATE (PFX) <<<\n";
-                    std::cout << "==================================================\n\n";
-                    std::cout << "(Press Ctrl+C at any time to cancel)\n\n";
+                    cout << ">>> GENERATE NEW CERTIFICATE (PFX) <<<\n";
+                    cout << "==================================================\n\n";
+                    cout << "(Press Ctrl+C at any time to cancel)\n\n";
                     
                     if (!SafeGetLine("Certificate Name: ", name)) { operationCancelled = true; break; }
                     if (g_ctrlCPressed) { operationCancelled = true; break; }
@@ -357,19 +359,19 @@ void ShowFileSignerMenu() {
                     if (g_ctrlCPressed) { operationCancelled = true; break; }
                     
                     if (!g_ctrlCPressed && CreateCertificate(name, pass, pfxPath)) {
-                        std::cout << "\n[+] SUCCESS: Certificate created at: " << pfxPath << "\n";
+                        cout << "\n[+] SUCCESS: Certificate created at: " << pfxPath << "\n";
                     } else if (!g_ctrlCPressed) {
-                        std::cout << "\n[-] FAILED: Certificate creation failed.\n";
+                        cout << "\n[-] FAILED: Certificate creation failed.\n";
                     }
                     break;
             }
             
             if (operationCancelled || g_ctrlCPressed) {
-                std::cout << "\n[!] Operation was cancelled by user.\n";
+                cout << "\n[!] Operation was cancelled by user.\n";
             }
             
-            std::cout << "\n==================================================\n";
-            std::cout << "Press any key to continue...";
+            cout << "\n==================================================\n";
+            cout << "Press any key to continue...";
             _getch();
             
             // Сбрасываем флаг после завершения операции

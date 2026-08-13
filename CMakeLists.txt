@@ -5,8 +5,8 @@ set(CMAKE_CXX_STANDARD 20)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -finput-charset=UTF-8 -fexec-charset=UTF-8")
 set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
+set(CMAKE_RC_FLAGS "-O coff")
 
-# ИСПОЛНЯЕМЫЙ ФАЙЛ (только исходники!)
 add_executable(7SCW main.cpp
         include/h_file/main.h
 
@@ -69,6 +69,9 @@ add_executable(7SCW main.cpp
         
         include/cpp_file/certificat/crt.cpp
         include/h_file/certificat/crt.h
+
+        include/cpp_file/users/users_manager.cpp
+        include/h_file/users/users_manager.h
 )
 
 target_link_libraries(7SCW 
@@ -77,4 +80,5 @@ target_link_libraries(7SCW
     ws2_32
     advapi32
     wininet
+    netapi32
 )

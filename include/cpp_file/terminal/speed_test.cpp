@@ -99,7 +99,7 @@ public:
             if (ping < minPing) minPing = ping;
             if (ping > maxPing) maxPing = ping;
 
-            std::cout << "Ping " << (i + 1) << ": " << ping << " ms\n";
+            cout << "Ping " << (i + 1) << ": " << ping << " ms\n";
         }
 
         cout << "Min Ping: " << minPing << " ms\n";

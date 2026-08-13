@@ -13,6 +13,8 @@
 #include "../../h_file/main.h"
 #include "../../Logger.h"
 
+using namespace std;
+
 // Global variables for update checking
 bool updateCheckDone = false;
 bool updateAvailable = false;

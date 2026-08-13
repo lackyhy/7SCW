@@ -153,7 +153,7 @@ int showRootSSLInfo_tt() {
 		int choice;
 		if (!(cin >> choice)) {
 			cin.clear();
-			cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
 			continue;
 		}
 
