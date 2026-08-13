@@ -1,20 +1,20 @@
 # 🖥️ 7 System Control Windows - 7SCW
 
-**Version:** 13.4 | **Created by:** LCKY and Akane | **GitHub:** https://github.com/lackyhy/7SCW
+**Version:** 14.2 | **Created by:** LCKY and Akane | **GitHub:** https://github.com/lackyhy/7SCW
 
-A powerful Windows console application that provides comprehensive system management capabilities, advanced file operations, startup management, security monitoring, and a custom bash-like terminal with encryption, hash generation, and network testing features.
+A powerful Windows console application that provides comprehensive system management capabilities, advanced file operations, user account administration, startup management, security monitoring, and a custom bash-like terminal with encryption, hash generation, and network testing features.
 
 ## ✨ Features
 
 ### 🔧 Core System Tools
-- **File Manager** - Advanced file and directory management with search capabilities and disk management
-- **Startup Management** - Comprehensive startup location monitoring and management
-- **User Management** - System user listing and management
-- **TEMP Files Cleanup** - Intelligent cleanup of temporary files across multiple locations
-- **System Information** - Detailed system information display
-- **Command Line Access** - Direct access to CMD and PowerShell
-- **Cookie Cleaner** - Multi-browser cookie cleanup (Chrome, Firefox, Edge, Opera, Yandex)
-- **Script Activator** - Execute custom scripts and batch files from `__script_` folder
+- **File Manager** - Advanced file and directory management with Copy, Move, Delete, Rename, MD5/SHA256 Checksum Calculator, File Attributes Editor, Text Previewer (`P` / `p`), Clipboard Path Copy, and Color-Coded File Listings.
+- **Startup Management** - Comprehensive startup location monitoring and management (Registry, Folders, Task Scheduler, Shell/Userinit).
+- **Users Manager** - Full Windows User Accounts Management (Enumerate accounts, detailed info, create users, reset passwords, enable/disable accounts, promote/demote admin roles, delete users).
+- **TEMP Files Cleanup** - Intelligent cleanup of temporary files across multiple locations.
+- **System Information** - Comprehensive System & Hardware Metrics (CPU model, RAM load bar, GPU & display resolution, storage capacities, Uptime, Network Adapters).
+- **Command Line Access** - Direct access to CMD and PowerShell.
+- **Cookie Cleaner** - Multi-browser cookie cleanup (Chrome, Firefox, Edge, Opera, Yandex).
+- **Script Activator** - Execute custom scripts and batch files from `__script_` folder.
 
 ### 🚀 Startup Management System
 Advanced startup monitoring and management tools:
@@ -156,24 +156,25 @@ cd 7SCW
 # Compile all source files
 g++ -std=c++20 -static-libgcc -static-libstdc++ \
     main.cpp \
-    cpp_file/argv.cpp \
-    cpp_file/terminal/terminal_commands.cpp \
-    cpp_file/terminal/terminal.cpp \
-    cpp_file/terminal/speed_test.cpp \
-    cpp_file/startup/SHOW_ALL_STARTUP.cpp \
-    cpp_file/startup/startup.cpp \
-    cpp_file/startup/restoreStartupSettings.cpp \
-    cpp_file/file_manager/file_manager.cpp \
-    cpp_file/security/file_hash_verifier.cpp \
-    cpp_file/security/log_viewer.cpp \
-    cpp_file/security/advanced_security_menu.cpp \
-    cpp_file/file/clear_temp_file.cpp \
-    cpp_file/file/clear_cookie.cpp \
-    cpp_file/activator/menu.cpp \
-    cpp_file/activator/load_script.cpp \
-    cpp_file/system_info/system_info.cpp \
-    cpp_file/logs/logs.cpp \
-    -luser32 -liphlpapi -lws2_32 -ladvapi32 -lwininet \
+    include/cpp_file/argv.cpp \
+    include/cpp_file/terminal/terminal_commands.cpp \
+    include/cpp_file/terminal/terminal.cpp \
+    include/cpp_file/terminal/speed_test.cpp \
+    include/cpp_file/startup/SHOW_ALL_STARTUP.cpp \
+    include/cpp_file/startup/startup.cpp \
+    include/cpp_file/startup/restoreStartupSettings.cpp \
+    include/cpp_file/file_manager/file_manager.cpp \
+    include/cpp_file/security/file_hash_verifier.cpp \
+    include/cpp_file/security/log_viewer.cpp \
+    include/cpp_file/security/advanced_security_menu.cpp \
+    include/cpp_file/file/clear_temp_file.cpp \
+    include/cpp_file/file/clear_cookie.cpp \
+    include/cpp_file/activator/menu.cpp \
+    include/cpp_file/activator/load_script.cpp \
+    include/cpp_file/system_info/system_info.cpp \
+    include/cpp_file/users/users_manager.cpp \
+    include/Logger.cpp \
+    -luser32 -liphlpapi -lws2_32 -ladvapi32 -lwininet -lnetapi32 \
     -o 7SCW.exe
 ```
 
@@ -184,22 +185,28 @@ g++ -std=c++20 -static-libgcc -static-libstdc++ \
 cd 7SCW
 
 # Compile with MSVC
-cl /std:c++20 main.cpp cpp_file\argv.cpp cpp_file\terminal\terminal_commands.cpp cpp_file\terminal\terminal.cpp cpp_file\terminal\speed_test.cpp cpp_file\startup\SHOW_ALL_STARTUP.cpp cpp_file\startup\startup.cpp cpp_file\startup\restoreStartupSettings.cpp cpp_file\file_manager\file_manager.cpp cpp_file\security\file_hash_verifier.cpp cpp_file\security\log_viewer.cpp cpp_file\security\advanced_security_menu.cpp cpp_file\file\clear_temp_file.cpp cpp_file\file\clear_cookie.cpp cpp_file\activator\menu.cpp cpp_file\activator\load_script.cpp cpp_file\system_info\system_info.cpp cpp_file\logs\logs.cpp /Fe:7SCW.exe user32.lib iphlpapi.lib ws2_32.lib advapi32.lib wininet.lib
+cl /std:c++20 main.cpp include\cpp_file\argv.cpp include\cpp_file\terminal\terminal_commands.cpp include\cpp_file\terminal\terminal.cpp include\cpp_file\terminal\speed_test.cpp include\cpp_file\startup\SHOW_ALL_STARTUP.cpp include\cpp_file\startup\startup.cpp include\cpp_file\startup\restoreStartupSettings.cpp include\cpp_file\file_manager\file_manager.cpp include\cpp_file\security\file_hash_verifier.cpp include\cpp_file\security\log_viewer.cpp include\cpp_file\security\advanced_security_menu.cpp include\cpp_file\file\clear_temp_file.cpp include\cpp_file\file\clear_cookie.cpp include\cpp_file\activator\menu.cpp include\cpp_file\activator\load_script.cpp include\cpp_file\system_info\system_info.cpp include\cpp_file\users\users_manager.cpp include\Logger.cpp /Fe:7SCW.exe user32.lib iphlpapi.lib ws2_32.lib advapi32.lib wininet.lib netapi32.lib
 ```
 
 #### Method 4: MinGW (Alternative)
 ```bash
 # Using MinGW compiler
-mingw32-g++ -std=c++20 main.cpp [all cpp files] -o 7SCW.exe -luser32 -liphlpapi -lws2_32 -ladvapi32 -lwininet
+mingw32-g++ -std=c++20 main.cpp [all cpp files] -o 7SCW.exe -luser32 -liphlpapi -lws2_32 -ladvapi32 -lwininet -lnetapi32
 ```
 
 ## 📖 Usage
 
 ### Command Line Arguments
-- **`-safemod`** - Run in safe mode (works in current terminal without admin rights)
+- **`-safemode` / `-safemod`** - Run in safe mode (works in current terminal without admin rights)
 - **`-clear_tempfile`** - Clear temporary files and exit
 - **`-clear_autorun`** - Restore startup settings and exit
-- **`--logs`** - Enable comprehensive logging to logs.txt file
+- **`--systemInfo`** - Display detailed system information and exit
+- **`--terminal`** - Launch interactive custom terminal directly
+- **`--clear_logs`** - Clear log history and delete `logs.txt`
+- **`--version` / `-v`** - Show current program version
+- **`--help` / `-h`** - Display command line help screen
+- **`--logs`** - Enable comprehensive logging to `logs.txt` file
+- **`-logs_console`** - Open separate console window for live logging
 
 ### Main Menu Navigation
 - **↑/↓ Arrows** - Navigate menu items
