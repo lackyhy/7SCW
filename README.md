@@ -10,6 +10,9 @@ A powerful Windows console application that provides comprehensive system manage
 - **File Manager** - Advanced file and directory management with Copy, Move, Delete, Rename, MD5/SHA256 Checksum Calculator, File Attributes Editor, Text Previewer (`P` / `p`), Clipboard Path Copy, and Color-Coded File Listings.
 - **Startup Management** - Comprehensive startup location monitoring and management (Registry, Folders, Task Scheduler, Shell/Userinit).
 - **Users Manager** - Full Windows User Accounts Management (Enumerate accounts, detailed info, create users, reset passwords, enable/disable accounts, promote/demote admin roles, delete users).
+- **DNS & SSL Reset** - Quick & Lite mode DNS cache (`ipconfig /flushdns`) and SSL state clearing.
+- **Certificate Manager** - Inspect and install system/root SSL certificates (`crt.cpp`).
+- **Web Interface Viewer** - Integrated local web dashboard view accessible via `'i'` hotkey.
 - **TEMP Files Cleanup** - Intelligent cleanup of temporary files across multiple locations.
 - **System Information** - Comprehensive System & Hardware Metrics (CPU model, RAM load bar, GPU & display resolution, storage capacities, Uptime, Network Adapters).
 - **Command Line Access** - Direct access to CMD and PowerShell.
@@ -87,12 +90,25 @@ Comprehensive network tools accessible via `network` command:
 - **Network:** `netstat`, `ipconfig`, `network` (opens network menu)
 - **Utilities:** `clear`, `date`, `echo`, `help`
 
+### 👥 Users Management System
+Full Win32 `NetUser` API integration for complete Windows user account control:
+- **Account Enumeration** - List all local Windows user accounts with role & status indicators (`[Active]`, `[Disabled]`, `[Locked]`, `[Administrator]`).
+- **Detailed Inspection** - View account flags, privilege level, password age, and last logon time.
+- **User Creation** - Create new local Windows user accounts with password assignment.
+- **Password Reset** - Change/reset passwords for local user accounts.
+- **Account Status Toggle** - Enable or disable user accounts (`NetUserSetInfo`).
+- **Privilege Escalation / Demotion** - Add/remove users from local `Administrators` group (`NetLocalGroupAddMembers`).
+- **Account Deletion** - Delete local user accounts (`NetUserDel`).
+
 ### 📁 Advanced File Management
-- **Directory Navigation** - Intuitive folder browsing with history
-- **File Operations** - Copy, move, delete, rename, create
-- **Search Engine** - Powerful file search with multiple filters
-- **Disk Management** - Drive information and cleanup tools
-- **Access Control** - File permission checking and management
+- **Directory Navigation** - Intuitive folder browsing with history and breadcrumbs
+- **File Operations** - Copy, move, delete, rename, create files/folders
+- **Quick Text Previewer** - Press **`P` / `p`** to preview text file contents (first 200 lines) inside terminal
+- **File Checksums** - Calculate MD5 and SHA-256 hashes for any file using Windows CryptoAPI
+- **File Attributes Editor** - Toggle `Read-Only`, `Hidden`, and `System` attributes (`SetFileAttributesA`)
+- **Color-Coded File List** - Bright Cyan for Folders, Green for Executables, Yellow for Archives, White for Code/Docs, Dim Gray for Hidden/System
+- **Search Engine** - Powerful search filters (`FOLDER::`, `FILE::`, `SS::` for exact match)
+- **Disk Management** - Storage capacity visual progress bars (`[==========-----] 65.4%`)
 
 ### 🔒 Advanced Security & Monitoring
 Accessible via **Left Arrow** key from main menu, featuring:
@@ -213,9 +229,12 @@ mingw32-g++ -std=c++20 main.cpp [all cpp files] -o 7SCW.exe -luser32 -liphlpapi 
 - **Enter** - Select option
 - **Right Arrow** - Open custom terminal
 - **Left Arrow** - Open Advanced Security Menu
+- **'P' / 'p'** - Quick text file preview (in File Manager)
+- **'O' / 'o'** - Additional Operations menu (in File Manager)
+- **'i' / 'I'** - Show Web Interface Dashboard
+- **'h' / 'H'** - Show help menu
+- **'q' / 'Q'** - Return to previous menu / Quit
 - **Ctrl+C** - Exit application
-- **'h'** - Show help menu
-- **'q'** - Quit current operation
 
 ### Terminal Commands
 
@@ -305,49 +324,63 @@ mv old_name.txt new_name.txt
 
 ```
 7SCW/
-├── main.cpp                          # Main application file
+├── main.cpp                          # Main application entry point & menu router
 ├── CMakeLists.txt                    # CMake build configuration
 ├── CMakePresets.json                 # CMake presets configuration
-├── cpp_file/                         # Source code files
-│   ├── activator/
-│   │   ├── load_script.cpp           # Script loading functionality
-│   │   └── menu.cpp                 # Activator menu system
-│   ├── argv.cpp                     # Command line argument processing
-│   ├── file/
-│   │   ├── clear_cookie.cpp         # Browser cookie cleanup
-│   │   └── clear_temp_file.cpp      # Temporary file cleanup
-│   ├── file_manager/
-│   │   └── file_manager.cpp         # File management system
-│   ├── logs/
-│   │   └── logs.cpp                 # Logging system implementation
-│   ├── security/
-│   │   ├── advanced_security_menu.cpp # Security menu interface
-│   │   ├── file_hash_verifier.cpp   # File integrity verification
-│   │   └── log_viewer.cpp           # Event log viewer
-│   ├── startup/
-│   │   ├── restoreStartupSettings.cpp # Startup restoration
-│   │   ├── SHOW_ALL_STARTUP.cpp     # Comprehensive startup viewer
-│   │   └── startup.cpp              # Startup management
-│   ├── system_info/
-│   │   └── system_info.cpp          # System information display
-│   └── terminal/
-│       ├── speed_test.cpp           # Network speed testing
-│       ├── terminal_commands.cpp    # Terminal command implementation
-│       └── terminal.cpp             # Terminal interface
-├── h_file/                          # Header files
-│   ├── activator/                   # Activator headers
-│   ├── argv.h                       # Command line arguments header
-│   ├── file/                        # File operation headers
-│   ├── file_manager/                # File manager headers
-│   ├── logs/                        # Logging headers
-│   ├── main.h                       # Main application header
-│   ├── security/                    # Security feature headers
-│   ├── startup/                     # Startup management headers
-│   ├── system_info/                 # System info headers
-│   └── terminal/                    # Terminal headers
+├── include/                          # Header & implementation files
+│   ├── Logger.h                      # Thread-safe logging engine header
+│   ├── Logger.cpp                    # Thread-safe logging engine source
+│   ├── cpp_file/                     # C++ Source implementations
+│   │   ├── activator/
+│   │   │   ├── load_script.cpp       # Script loading & execution
+│   │   │   └── menu.cpp             # Activator menu system
+│   │   ├── argv.cpp                 # Command line argument parser
+│   │   ├── certificat/
+│   │   │   └── crt.cpp              # SSL certificate installer & manager
+│   │   ├── dnsSSL/
+│   │   │   └── dnsSSL.cpp           # DNS cache flush & SSL reset
+│   │   ├── file/
+│   │   │   ├── clear_cookie.cpp     # Multi-browser cookie cleaner
+│   │   │   └── clear_temp_file.cpp  # Temporary file cleanup
+│   │   ├── file_manager/
+│   │   │   └── file_manager.cpp     # Advanced File Manager & Checksum engine
+│   │   ├── logs/
+│   │   │   └── logs.cpp             # Logging system helpers
+│   │   ├── security/
+│   │   │   ├── advanced_security_menu.cpp # Security menu interface
+│   │   │   ├── file_hash_verifier.cpp   # Integrity verification
+│   │   │   └── log_viewer.cpp       # Windows Event Log viewer
+│   │   ├── show_web/
+│   │   │   └── show_web.cpp         # Web dashboard interface
+│   │   ├── startup/
+│   │   │   ├── restoreStartupSettings.cpp # Startup restoration
+│   │   │   ├── SHOW_ALL_STARTUP.cpp # Startup items viewer
+│   │   │   └── startup.cpp          # Startup management
+│   │   ├── system_info/
+│   │   │   └── system_info.cpp      # System & Hardware Info metrics
+│   │   ├── terminal/
+│   │   │   ├── speed_test.cpp       # Network speed testing
+│   │   │   ├── terminal_commands.cpp # Bash-like terminal commands
+│   │   │   └── terminal.cpp         # Terminal shell interface
+│   │   └── users/
+│   │       └── users_manager.cpp    # Win32 NetUser accounts manager
+│   └── h_file/                       # Header declarations
+│       ├── activator/
+│       ├── argv.h
+│       ├── certificat/
+│       ├── dnsSSL/
+│       ├── file/
+│       ├── file_manager/
+│       ├── logs/
+│       ├── main.h
+│       ├── security/
+│       ├── show_web/
+│       ├── startup/
+│       ├── system_info/
+│       ├── terminal/
+│       └── users/
 ├── build/                           # CMake build directory
-├── out/                             # Output directory
-└── README.md                        # This documentation file
+└── README.md                        # Documentation file
 ```
 
 ## 🔧 Technical Details
