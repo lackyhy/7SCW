@@ -1,4 +1,5 @@
-**Version:** 14.2 | **Created by:** LCKY and Akane | **GitHub:** https://github.com/lackyhy/7SCW | **Official website:** https://7scw.ru
+**Version:** 14.2 | **Created by:** LCKY and Akane | **GitHub:** https://github.com/lackyhy/7SCW 
+**Official website:** https://7scw.ru
 
 A powerful Windows console application that provides comprehensive system management capabilities, advanced file operations, user account administration, startup management, security monitoring, and a custom bash-like terminal with encryption, hash generation, and network testing features.
 
