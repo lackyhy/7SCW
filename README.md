@@ -1,5 +1,3 @@
-<img width="626" height="778" alt="изображение" src="https://github.com/user-attachments/assets/5f72365e-4056-456d-9a3d-5cc9881b581f" /># 🖥️ 7 System Control Windows - 7SCW
-
 **Version:** 14.2 | **Created by:** LCKY and Akane | **GitHub:** https://github.com/lackyhy/7SCW | **Official website:** https://7scw.ru
 
 A powerful Windows console application that provides comprehensive system management capabilities, advanced file operations, user account administration, startup management, security monitoring, and a custom bash-like terminal with encryption, hash generation, and network testing features.
