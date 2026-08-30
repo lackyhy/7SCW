@@ -173,6 +173,7 @@ private:
                 "Startup folders",
                 "Registry startup",
                 "Extended registry",
+                "All HKU user hives",
                 "Scheduled tasks",
                 "Windows services",
                 "Browser extensions",
@@ -201,6 +202,11 @@ private:
         // 3. Реестр - дополнительные разделы
         showProgress("Scanning extended registry...", ++step, totalSteps);
         collectExtendedRegistryItems();
+        Sleep(100);
+
+        // 4. Все профили HKEY_USERS
+        showProgress("Scanning all HKEY_USERS hives...", ++step, totalSteps);
+        collectHkeyUsersStartupItems();
         Sleep(100);
 
         // 4. Задачи планировщика
@@ -317,6 +323,30 @@ private:
 
         for (const auto& regPath : extendedPaths) {
             collectRegistryValuesWinAPI(regPath.first, regPath.second);
+        }
+    }
+
+    void collectHkeyUsersStartupItems() {
+        HKEY hUsers;
+        if (RegOpenKeyExA(HKEY_USERS, NULL, 0, KEY_READ, &hUsers) == ERROR_SUCCESS) {
+            DWORD index = 0;
+            CHAR subKeyName[256];
+            DWORD subKeyNameSize;
+            while (true) {
+                subKeyNameSize = sizeof(subKeyName);
+                LONG res = RegEnumKeyExA(hUsers, index, subKeyName, &subKeyNameSize, NULL, NULL, NULL, NULL);
+                if (res != ERROR_SUCCESS) break;
+                index++;
+                string userSid = subKeyName;
+                if (userSid.find("_Classes") != string::npos) continue;
+                if (userSid == ".DEFAULT") continue;
+
+                string runPath = "HKU\\" + userSid + "\\Software\\Microsoft\\Windows\\CurrentVersion\\Run";
+                collectRegistryValuesWinAPI(runPath, "Registry - User (" + userSid + ") Run");
+                string runOncePath = "HKU\\" + userSid + "\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce";
+                collectRegistryValuesWinAPI(runOncePath, "Registry - User (" + userSid + ") RunOnce");
+            }
+            RegCloseKey(hUsers);
         }
     }
 

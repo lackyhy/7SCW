@@ -72,6 +72,9 @@ add_executable(7SCW main.cpp
 
         include/cpp_file/users/users_manager.cpp
         include/h_file/users/users_manager.h
+
+        include/cpp_file/pstools/pstools_manager.cpp
+        include/h_file/pstools/pstools_manager.h
 )
 
 target_link_libraries(7SCW 

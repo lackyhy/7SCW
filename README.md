@@ -1,14 +1,15 @@
-**Version:** 14.2 | **Created by:** LCKY and Akane | **GitHub:** https://github.com/lackyhy/7SCW 
+# 🖥️ 7 System Control Windows - 7SCW
 
-**Official website:** https://7scw.ru
+**Version:** 15.0 | **Created by:** LCKY and Akane | **GitHub:** https://github.com/lackyhy/7SCW | **Official website:** https://7scw.ru
 
-A powerful Windows console application that provides comprehensive system management capabilities, advanced file operations, user account administration, startup management, security monitoring, and a custom bash-like terminal with encryption, hash generation, and network testing features.
+A powerful Windows console application that provides comprehensive system management capabilities, advanced file operations, user account administration, startup management, security monitoring, PSTools integration for NT AUTHORITY\SYSTEM access, and a custom bash-like terminal with encryption, hash generation, and network testing features.
 
 ## ✨ Features
 
 ### 🔧 Core System Tools
 - **File Manager** - Advanced file and directory management with Copy, Move, Delete, Rename, MD5/SHA256 Checksum Calculator, File Attributes Editor, Text Previewer (`P` / `p`), Clipboard Path Copy, and Color-Coded File Listings.
-- **Startup Management** - Comprehensive startup location monitoring and management (Registry, Folders, Task Scheduler, Shell/Userinit).
+- **Startup Management** - Comprehensive startup location monitoring and management (Registry, Folders, Task Scheduler, Shell/Userinit, ALL PC Startups across all `HKEY_USERS` profiles).
+- **Run as SYSTEM (PSTools)** - Integrated Sysinternals PSTools (PsExec) downloader and manager to launch CMD, PowerShell, Task Manager, Regedit or custom tools with `NT AUTHORITY\SYSTEM` privileges.
 - **Users Manager** - Full Windows User Accounts Management (Enumerate accounts, detailed info, create users, reset passwords, enable/disable accounts, promote/demote admin roles, delete users).
 - **DNS & SSL Reset** - Quick & Lite mode DNS cache (`ipconfig /flushdns`) and SSL state clearing.
 - **Certificate Manager** - Inspect and install system/root SSL certificates (`crt.cpp`).
@@ -131,6 +132,16 @@ Accessible via **Left Arrow** key from main menu, featuring:
   - Works in current terminal (no new window creation)
   - Full menu access with limited functionality
   - Status display in window title
+
+### ⚡ Run as SYSTEM (PSTools Integration)
+- **Sysinternals Integration** - Automatically downloads and configures official PSTools (PsExec) into application folder
+- **Auto EULA Acceptance** - Suppresses PsExec first-run prompt for seamless automation
+- **Elevated Execution Options:**
+  - Launch CMD as `NT AUTHORITY\SYSTEM`
+  - Launch PowerShell as `NT AUTHORITY\SYSTEM`
+  - Open Task Manager or Regedit with SYSTEM privileges
+  - Run custom commands or executables as SYSTEM
+- **SYSTEM Mode UI Awareness** - Title bar & main menu dynamically adapt when running inside a SYSTEM shell context
 
 ### 📝 Logging System
 - **Comprehensive Logging** - Enable with `--logs` flag for detailed operation tracking

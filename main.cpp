@@ -24,6 +24,7 @@
 #include "include/h_file/dnsSSL/dnsSSL.h"
 #include "include/h_file/show_web/show_web.h"
 #include "include/h_file/users/users_manager.h"
+#include "include/h_file/pstools/pstools_manager.h"
 
 using namespace std;
 
@@ -126,6 +127,11 @@ void showHelp()
     cout << "       - Export Security Report: Generate security reports" << endl
          << endl;
 
+    cout << "   Run as SYSTEM (PSTools):" << endl;
+    cout << "       - Download PSTools (Sysinternals) directly into application directory" << endl;
+    cout << "       - Launch CMD, PowerShell, Task Manager, Regedit or custom tools as NT AUTHORITY\\SYSTEM" << endl
+         << endl;
+
     cout << "   Additional Programs:" << endl;
     cout << "       - Access to various utilities such as SimpleUnlocker, Registry Workshop, ProcessHacker, etc." << endl
          << endl;
@@ -195,20 +201,37 @@ void drawMenu(const vector<string> &menuItems, int selectedIndex)
 
 void showStartupLocationsMenu()
 {
-    vector<string> options = {
-        "Startup Folder",
-        "Task Scheduler",
-        "Registry",
-        "Shell/Userinit\n",
-        "Restore to original\n",
-        "Back to Main Menu"};
+    bool isSys = isRunningAsSystem();
+    vector<string> options;
+    if (isSys) {
+        options = {
+            "Startup Folder",
+            "Task Scheduler",
+            "ALL PC Startups (SYSTEM)",
+            "Registry",
+            "Shell/Userinit\n",
+            "Restore to original\n",
+            "Back to Main Menu"
+        };
+    } else {
+        options = {
+            "Startup Folder",
+            "Task Scheduler",
+            "ALL PC Startups",
+            "Registry",
+            "Shell/Userinit\n",
+            "Restore to original\n",
+            "Back to Main Menu"
+        };
+    }
+
     int selectedIndex = 0;
     bool running = true;
 
     while (running)
     {
         system("cls");
-        cout << "Check Startup Locations" << endl;
+        cout << "Check Startup Locations" << (isSys ? " [NT AUTHORITY\\SYSTEM]" : "") << endl;
         cout << "Use Up and Down arrows to navigate, Enter to select, 'q' to quit" << endl
              << endl;
 
@@ -218,6 +241,12 @@ void showStartupLocationsMenu()
             bool isSel = (i == selectedIndex);
             if (isSel)
                 SetConsoleTextAttribute(hConsole, BACKGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+
+            if (options[i].find("ALL PC Startups") != string::npos)
+            {
+                if (!isSel)
+                    SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+            }
 
             // Set color for "Restore to original" option text
             if (options[i] == "Restore to original\n")
@@ -264,16 +293,19 @@ void showStartupLocationsMenu()
             case 1: // Task Scheduler
                 checkTaskScheduler();
                 break;
-            case 2: // Registry
+            case 2: // ALL PC Startups (SYSTEM)
+                SHOW_ALL_STARTUP();
+                break;
+            case 3: // Registry
                 checkRegistryStartup();
                 break;
-            case 3: // Shell/Userinit
+            case 4: // Shell/Userinit
                 checkShellUserinit();
                 break;
-            case 4: // Restore to original
+            case 5: // Restore to original
                 restoreStartupSettings();
                 break;
-            case 5: // Back to Main Menu
+            case 6: // Back to Main Menu
                 running = false;
                 break;
             }
@@ -304,6 +336,7 @@ void main_menu(bool safemod, bool isAdmin)
             "System Info\n",
             "CMD",
             "POWERSHELL\n",
+            "Run as SYSTEM (PSTools)\n",
             "Help",
             "Exit"};
 
@@ -382,11 +415,15 @@ void main_menu(bool safemod, bool isAdmin)
                     system("powershell");
                     _getch();
                     break;
-                case 8: // Help
+                case 8: // Run as SYSTEM (PSTools)
+                    Logger::info("Opening Run as SYSTEM Menu");
+                    showPSToolsMenu();
+                    break;
+                case 9: // Help
                     Logger::info("Showing help menu");
                     showHelp();
                     break;
-                case 9: // Exit
+                case 10: // Exit
                     Logger::info("Exiting application");
                     running = false;
                     break;
@@ -422,7 +459,11 @@ void main_menu(bool safemod, bool isAdmin)
         }
         Logger::info("Running with administrator privileges");
         stringstream title;
-        title << (safemode ? "Menu System [SAFE MODE]" : "Menu System") << ",            isAdmin: " << (isAdmin ? "true" : "false");
+        if (isRunningAsSystem()) {
+            title << "Menu System [NT AUTHORITY\\SYSTEM], isAdmin: true";
+        } else {
+            title << (safemode ? "Menu System [SAFE MODE]" : "Menu System") << ",            isAdmin: " << (isAdmin ? "true" : "false");
+        }
         SetConsoleTitleA(title.str().c_str());
         hideCursor();
 
@@ -443,6 +484,7 @@ void main_menu(bool safemod, bool isAdmin)
             "System Info\n",
             "CMD",
             "POWERSHELL\n",
+            "Run as SYSTEM (PSTools)\n",
             "Help",
             "Exit"
         };
@@ -524,11 +566,15 @@ void main_menu(bool safemod, bool isAdmin)
                     system("powershell");
                     _getch();
                     break;
-                case 8: // Help
+                case 8: // Run as SYSTEM (PSTools)
+                    Logger::info("Opening Run as SYSTEM Menu");
+                    showPSToolsMenu();
+                    break;
+                case 9: // Help
                     Logger::info("Showing help menu");
                     showHelp();
                     break;
-                case 9: // Exit
+                case 10: // Exit
                     Logger::info("Exiting application");
                     running = false;
                     break;
