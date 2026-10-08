@@ -3,6 +3,10 @@ project(7SCW)
 
 set(CMAKE_CXX_STANDARD 20)
 
+# Предотвращаем конфликт std::byte (C++17/20) с typedef unsigned char byte в rpcndr.h MinGW
+add_compile_definitions(_HAS_STD_BYTE=0)
+add_compile_options(-D_HAS_STD_BYTE=0)
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -finput-charset=UTF-8 -fexec-charset=UTF-8")
 set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
 set(CMAKE_RC_FLAGS "-O coff")

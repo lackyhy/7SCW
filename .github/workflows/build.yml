@@ -21,13 +21,11 @@ jobs:
       - name: Setup MinGW in PATH
         shell: pwsh
         run: |
-          # В Windows Runner уже предустановлен WinLibs / MinGW в C:\ProgramData\mingw64\mingw64\bin
-          if (Test-Path "C:\ProgramData\mingw64\mingw64\bin") {
+          # В Windows Runner GitHub Actions предустановлен MinGW в C:\mingw64\bin
+          if (Test-Path "C:\mingw64\bin") {
+            "C:\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          } elseif (Test-Path "C:\ProgramData\mingw64\mingw64\bin") {
             "C:\ProgramData\mingw64\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          } else {
-            # Fallback: шоколадка без сломанных сторонних actions
-            choco install mingw --version 13.2.0 -y --no-progress
-            "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           }
 
       - name: Verify GCC Version
@@ -39,7 +37,7 @@ jobs:
       - name: Configure CMake
         shell: pwsh
         run: |
-          cmake -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++
+          cmake -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-D_HAS_STD_BYTE=0"
 
       - name: Build
         shell: pwsh
