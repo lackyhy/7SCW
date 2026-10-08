@@ -1,0 +1,59 @@
+name: Build and Release 7SCW
+
+on:
+  push:
+    branches: [ "main" ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build-mingw:
+    name: Build with MinGW (GCC C++20)
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup MinGW (GCC C++20)
+        uses: egor-tensin/setup-mingw@v2
+        with:
+          platform: x64
+          version: 13.2.0
+
+      - name: Configure CMake (MinGW Makefiles)
+        run: |
+          cmake -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: |
+          cmake --build build --config Release
+
+      - name: Verify Executable
+        shell: pwsh
+        run: |
+          if (Test-Path "build/7SCW.exe") {
+            Write-Host "Build succeeded: build/7SCW.exe found"
+            Get-Item "build/7SCW.exe" | Format-List Length, LastWriteTime
+          } else {
+            Write-Error "7SCW.exe not found in build directory!"
+            exit 1
+          }
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: 7SCW-windows-x64
+          path: build/7SCW.exe
+          if-no-files-found: error
+
+      - name: Create GitHub Release on tag
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/7SCW.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
