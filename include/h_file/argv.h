@@ -5,8 +5,6 @@
 #include <vector>
 #include <windef.h>
 
-using namespace std;
-
 // Объявление глобальных переменных
 extern BOOL isAdmin;
 extern BOOL safemode;
@@ -20,11 +18,11 @@ extern BOOL show_version;
 extern BOOL termianl_;
 extern BOOL clear_logs;
 
-extern const string VERSION;
+extern const std::string VERSION;
 
 class Argv {
 private:
-    vector<string> arguments;
+    std::vector<std::string> arguments;
 
 public:
     // Устанавливает аргументы
@@ -35,7 +33,7 @@ public:
 };
 
 // Функции для обработки аргументов
-void process_argc_(string name_argv);
+void process_argc_(std::string name_argv);
 void process_argc();
 void process_command_line_args(int argc, char* argv[]);
 

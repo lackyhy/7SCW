@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "../../h_file/terminal/speed_test.h"
 #include <iostream>
 #include <chrono>

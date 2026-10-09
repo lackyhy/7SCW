@@ -6,25 +6,23 @@
 #include <vector>
 #include <map>
 
-using namespace std;
-
 struct LogEntry {
-    string timestamp;
-    string level;
-    string source;
-    string category;
-    string description;
+    std::string timestamp;
+    std::string level;
+    std::string source;
+    std::string category;
+    std::string description;
     DWORD eventId;
-    string computer;
+    std::string computer;
 };
 
 struct LogFilter {
-    string source;
-    string level;
+    std::string source;
+    std::string level;
     DWORD eventId;
-    string dateFrom;
-    string dateTo;
-    string keyword;
+    std::string dateFrom;
+    std::string dateTo;
+    std::string keyword;
     bool showErrors;
     bool showWarnings;
     bool showInfo;
@@ -39,9 +37,9 @@ private:
     void showEntryDetails(const LogEntry& entry);
     
 public:
-    vector<LogEntry> logEntries;
+    std::vector<LogEntry> logEntries;
     
-    void readEventLog(const string& logName);
+    void readEventLog(const std::string& logName);
     bool matchesFilter(const LogEntry& entry);
     LogViewer();
     
@@ -51,7 +49,7 @@ public:
     void viewSecurityLogs();
     void viewSystemLogs();
     void searchLogs();
-    void browseLogs(const string& logName);
+    void browseLogs(const std::string& logName);
     
     // Фильтрация
     void setFilter(const LogFilter& filter);
@@ -59,7 +57,7 @@ public:
     void clearFilter();
     
     // Утилиты
-    void exportLogs(const string& filename);
+    void exportLogs(const std::string& filename);
     void showLogStatistics();
     
     // Меню
@@ -69,9 +67,9 @@ public:
 
 // Функции для работы с логами
 void viewWindowsLogs();
-void searchWindowsLogs(const string& keyword);
-void exportWindowsLogs(const string& logName, const string& filename);
-vector<LogEntry> getRecentErrors(int count = 10);
-vector<LogEntry> getSecurityEvents(int count = 10);
+void searchWindowsLogs(const std::string& keyword);
+void exportWindowsLogs(const std::string& logName, const std::string& filename);
+std::vector<LogEntry> getRecentErrors(int count = 10);
+std::vector<LogEntry> getSecurityEvents(int count = 10);
 
 #endif // LOG_VIEWER_H

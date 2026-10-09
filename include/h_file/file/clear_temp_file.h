@@ -2,9 +2,9 @@
 #define INC_7SCW_CLEAR_TEMP_FILE_H
 
 #include <string>
-using namespace std;
+#include <windows.h>
 
-string formatFileSize(DWORD size);
+std::string formatFileSize(DWORD size);
 void clear_temp_file();
 
 #endif //INC_7SCW_CLEAR_TEMP_FILE_H

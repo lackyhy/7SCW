@@ -5,17 +5,15 @@
 #include <vector>
 #include <windows.h>
 
-using namespace std;
-
 struct UserAccountInfo {
-    string username;
-    string fullName;
-    string comment;
+    std::string username;
+    std::string fullName;
+    std::string comment;
     bool isDisabled;
     bool isLocked;
     bool isAdmin;
-    string role;
-    string lastLogon;
+    std::string role;
+    std::string lastLogon;
     DWORD passwordAgeDays;
     bool passwordRequired;
 };

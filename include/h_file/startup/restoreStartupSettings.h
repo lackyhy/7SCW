@@ -1,7 +1,6 @@
 #ifndef INC_7SCW_RESTORESTARTUPSETTINGS_H
 #define INC_7SCW_RESTORESTARTUPSETTINGS_H
 
-using namespace std;
 
 void restoreStartupSettings();
 

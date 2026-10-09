@@ -1,5 +1,6 @@
-#include "iostream"
-#include "string"
+#include <windows.h>
+#include <iostream>
+#include <string>
 
 #include "algorithm"
 #include "conio.h"

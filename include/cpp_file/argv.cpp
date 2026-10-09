@@ -1,3 +1,6 @@
+#include <windows.h>
+#include <iostream>
+
 #include "../h_file/argv.h"
 #include "../h_file/main.h"
 #include "../h_file/startup/restoreStartupSettings.h"

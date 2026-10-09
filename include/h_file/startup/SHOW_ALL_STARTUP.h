@@ -1,7 +1,6 @@
 #ifndef INC_7SCW_SHOW_ALL_STARTUP_H
 #define INC_7SCW_SHOW_ALL_STARTUP_H
 
-using namespace std;
 
 void startupMG_SHOW_ALL_STARTUP_1();
 void startupMG_SHOW_ALL_STARTUP_2();
